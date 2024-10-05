@@ -23,11 +23,6 @@ spresenseのプロジェクトフォルダを共有するためのGit連携手�
 ```
 git init
 ```
-#### Gitのユーザ名とメールアドレスを設定
-```
-git config --global user.name <username>
-git config --global user.email <user@sample.com>
-```
 #### リモートリポジトリをローカルに追加（SSHでも可）
 ```
 git clone https://github.com/YashyHoby/InuSense.git
