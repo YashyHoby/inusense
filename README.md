@@ -17,7 +17,6 @@ user/
  ├
 ```
 
-
 ### Git連携
 spresenseのプロジェクトフォルダを共有するためのGit連携手順。
 #### userディレクトリ下でGit初期化
@@ -37,11 +36,17 @@ git clone https://github.com/YashyHoby/inusense.git
 ```
 git checkout develop
 ```
-#### 作業用ブランチ作成
+#### 作業ブランチ作成
 ```
 git branch feature/*****
 ```
-#### 作業用ブランチに切り替え
+#### 作業ブランチに切り替え
 ```
 git checkout feature/*****
+```
+
+### メモ
+#### ブランチ削除
+```
+git branch -d feature/*****
 ```
