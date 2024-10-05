@@ -12,7 +12,7 @@ user/
  ├spresense/
  │ └ spresense SDKのツール達
  ├inusense/
- │ └ プロジェクトフォルダ（gitで共有します）
+ │ └ プロジェクトフォルダ（削除してよい）
  ├inusense.code-workspase
  ├
 ```
