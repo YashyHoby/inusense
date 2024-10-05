@@ -30,3 +30,17 @@ git clone https://github.com/YashyHoby/inusense.git
 #### クローンしたプロジェクトフォルダ（InuSense）をworkspaceに追加
 エクスプローラでフォルダを開き、vscodeで開いているworkspaceにドラックドロップ
 
+### 作業ブランチの設定
+開発用ブランチdevelopから作業ブランチを作成して開発を進めてください
+#### developブランチに切り替え
+```
+git checkout develop
+```
+#### 作業用ブランチ作成
+```
+git branch feature/*****
+```
+#### 作業用ブランチに切り替え
+```
+git checkout feature/*****
+```
