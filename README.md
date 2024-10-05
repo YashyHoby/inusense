@@ -19,6 +19,7 @@ user/
 
 ### Git連携
 spresenseのプロジェクトフォルダを共有するためのGit連携手順。[Spresense SDK開発環境の設定](#Spresense SDK開発環境の設定)に従って作成したワークスペースに、このプロジェクトを読み込ませるだけでよい。
+wsl環境へのGitのアカウント紐づけは各自で行ってください。
 #### userディレクトリ下でリモートリポジトリをローカルに追加（SSHでも可）
 ```
 git clone https://github.com/YashyHoby/inusense.git
