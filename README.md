@@ -28,8 +28,8 @@ git init
 git config --global user.name <username>
 git config --global user.email <user@sample.com>
 ```
-#### リモートリポジトリをローカルに追加
+#### リモートリポジトリをローカルに追加（SSHでも可）
 ```
-
+git clone https://github.com/YashyHoby/InuSense.git
 ```
 
