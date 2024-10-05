@@ -2,7 +2,7 @@
 
 ## 環境構築（書きなぐり）
 ### Spresense SDK開発環境の設定
-[Spresense SDK スタートガイド] (https://developer.sony.com/spresense/development-guides/sdk_set_up_ide_ja.html)に従い、Spresense VSCodeIDEのセットアップとワークスペースの作成を行う。
+[Spresense SDK スタートガイド] (https://developer.sony.com/spresense/development-guides/sdk_set_up_ide_ja.html) に従い、Spresense VSCodeIDEのセットアップとワークスペースの作成を行う。
 
 開発環境のファイル構造。(プロジェクトフォルダ名:inusense)
 ``` tree
