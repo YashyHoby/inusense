@@ -19,7 +19,7 @@ user/
 
 ### Git連携
 spresenseのプロジェクトフォルダを共有するためのGit連携手順。
-#### プロジェクトフォルダ内でGit初期化
+#### userディレクトリ下でGit初期化
 ```
 git init
 ```
@@ -27,4 +27,6 @@ git init
 ```
 git clone https://github.com/YashyHoby/InuSense.git
 ```
+#### クローンしたプロジェクトフォルダ（InuSense）をworkspaceに追加
+エクスプローラでフォルダを開き、vscodeで開いているworkspaceにドラックドロップ
 
