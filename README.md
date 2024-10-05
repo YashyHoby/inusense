@@ -28,4 +28,8 @@ git init
 git config --global user.name <username>
 git config --global user.email <user@sample.com>
 ```
+#### リモートリポジトリをローカルに追加
+```
+
+```
 
