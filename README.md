@@ -25,7 +25,7 @@ git init
 ```
 #### リモートリポジトリをローカルに追加（SSHでも可）
 ```
-git clone https://github.com/YashyHoby/InuSense.git
+git clone https://github.com/YashyHoby/inusense.git
 ```
 #### クローンしたプロジェクトフォルダ（InuSense）をworkspaceに追加
 エクスプローラでフォルダを開き、vscodeで開いているworkspaceにドラックドロップ
