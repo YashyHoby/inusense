@@ -2,7 +2,7 @@ import openai
 from openai import RateLimitError, Timeout, APIError, APIConnectionError, OpenAIError
 import datetime
 
-CHATGPT_API_KEY_PATH = "../../../config/openai/chatGPT_api.txt"
+CHATGPT_API_KEY_PATH = "../../../../config/openai/chatGPT_api.txt"
 FORMAT = """
         speak japanese
         """
