@@ -5,7 +5,7 @@ import keyboard
 from google.cloud import speech
 
 # Google Cloud APIキーの設定
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../../../config/google/notion-calendar-manager-bc1ebc32bf22.json"
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../../../../config/google/notion-calendar-manager-bc1ebc32bf22.json"
 
 client = speech.SpeechClient()
 
@@ -47,6 +47,7 @@ def transcribe_speech(audio_data):
     )
 
     response = client.recognize(config=config, audio=audio)
+    
     for result in response.results:
         print('Transcript: {}'.format(result.alternatives[0].transcript))
 
