@@ -1,0 +1,14 @@
+[
+    {
+        "role": "user",
+        "content": "こんにちは"
+    },
+    {
+        "role": "user",
+        "content": "私の名前はまさです"
+    },
+    {
+        "role": "user",
+        "content": "私の名前を呼んでください"
+    }
+]
