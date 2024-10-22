@@ -116,7 +116,7 @@ void loop() {
 			}
 
  			do {
-				result = theHttpGs2200.receive(2000);
+				result = theHttpGs2200.receive(5000);
 				if (result) {
 					theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
 					ConsolePrintf("%s", (char *)(Receive_Data));
@@ -128,7 +128,7 @@ void loop() {
 
 			result = theHttpGs2200.end();
 
-			delay(1000);
+			delay(5000);
 			httpStat = POST;
 			break;
 		default:

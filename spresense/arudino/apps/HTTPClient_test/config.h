@@ -24,7 +24,7 @@
 #define  PASSPHRASE     "3B609f(6"
 
 #define  HTTP_SRVR_IP  "163.221.126.163"
-#define  HTTP_PORT     "3000"//"10080"
+#define  HTTP_PORT     "3000"
 #define  HTTP_GET_PATH "/"
 #define  HTTP_POST_PATH "/postData"
 
