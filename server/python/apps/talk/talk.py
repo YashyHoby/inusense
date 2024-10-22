@@ -8,16 +8,18 @@ from playsound import playsound
 import openai
 from openai import RateLimitError, Timeout, APIError, APIConnectionError, OpenAIError
 import datetime
+import json
 
 
 # Google Cloud APIキーの設定
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "../../../../config/google/notion-calendar-manager-bc1ebc32bf22.json"
 client = speech.SpeechClient()
+
 # 音声録音の設定
 RATE = 16000
 CHUNK = int(RATE / 10)  # 100ms
 
-
+# ChatGPT APIの設定
 CHATGPT_API_KEY_PATH = "../../../../config/openai/chatGPT_api.txt"
 FORMAT = """
         speak japanese.
@@ -27,15 +29,7 @@ FORMAT = """
 
 # 読み上げ音声ファイル
 FILE_NAME = "speech.mp3"
-
-def check_microphone():
-    audio = pyaudio.PyAudio()
-    print("Available audio devices:")
-    for i in range(audio.get_device_count()):
-        device_info = audio.get_device_info_by_index(i)
-        print(f"Device {i}: {device_info['name']} (Input channels: {device_info['maxInputChannels']})")
-    
-    audio.terminate()
+CHAT_HISTORY_FILE = "chat_history.json"  # 履歴を保存するファイル
 
 def record_audio():
     audio = pyaudio.PyAudio()
@@ -95,6 +89,7 @@ def transcribe_speech(audio_data):
 
     return text
 
+# ChatGPTのAPIキー取得
 def read_keyFile():
     try:
         with open(CHATGPT_API_KEY_PATH, 'r', encoding='utf-8') as file:
@@ -105,29 +100,44 @@ def read_keyFile():
     except Exception as e:
         return f"エラーが発生しました: {e}"
 
+# ファイルから履歴を読み込む
+def load_chat_history():
+    try:
+        with open(CHAT_HISTORY_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []  # ファイルがなければ空のリストを返す
+
+# 履歴をファイルに保存する
+def save_chat_history(messages):
+    with open(CHAT_HISTORY_FILE, 'w', encoding='utf-8') as f:
+        json.dump(messages, f, ensure_ascii=False, indent=4)
+
 def receive_GPT_response(question):
     openai.api_key = read_keyFile()
 
     dt_now = str(datetime.datetime.now())
     
-    answer = ""
+    messages = load_chat_history()
+    messages.append({"role": "user", "content": question})
+    
     try:
         # 正しいAPIエンドポイントを使用してAPIキーの検証を行います
         res = openai.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": FORMAT},
-                {"role": "user", "content": question}
-            ]
+            messages=messages
         )
         #print("APIキーが正しく認識されています。")
         answer = res.choices[0].message.content
+        save_chat_history(messages)
+
     except openai.AuthenticationError:
         print("APIキーが無効です。正しいAPIキーを設定してください。")
     except openai.RateLimitError:
         print("レートリミットに達しました。後でもう一度試してください。")
     except openai.OpenAIError as e:
         print(f"OpenAIのエラーが発生しました: {e}")
+
 
     return answer
 
@@ -150,12 +160,10 @@ def main():
             print("Exiting...")
             break
 
-        if command.lower() == 'c':
-            check_microphone()
-
         if command.lower() == 'r':
             audio_data = record_audio()
             text = transcribe_speech(audio_data)
+            print(text)
             answer = receive_GPT_response(text)
             create_speech_mp3(answer)
             print(answer)
