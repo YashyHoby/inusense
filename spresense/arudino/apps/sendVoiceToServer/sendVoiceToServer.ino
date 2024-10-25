@@ -18,12 +18,11 @@ typedef enum{
 
 DEMO_STATUS_E httpStat;
 
-const uint16_t SEND_BUF_SIZE = 100;
+const uint16_t SEND_BUF_SIZE = 4096;
 
-char sendData[SEND_BUF_SIZE];
-char* audioDataBin;
-// char* audioDataStr;
-char audioDataStr[SEND_BUF_SIZE];
+char audioDataBin[SEND_BUF_SIZE];
+char audioDataStr[2*SEND_BUF_SIZE+1];
+// char sendData[2*SEND_BUF_SIZE+1];
 
 const uint16_t RECEIVE_PACKET_SIZE = 1500;
 uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
@@ -38,9 +37,13 @@ void parse_httpresponse(char *message)
 	char *p;
 	
 	if ((p=strstr(message, "200 OK\r\n")) != NULL) {
-		ConsolePrintf("Response : %s\r\n", p+8);
+		//ConsolePrintf("Response : %s\r\n", p+8);
 	}
 }
+
+// int calcPostTimes(size_t sendBufSize,size_t fileSize){
+
+// }
 
 void setup() {
 
@@ -87,45 +90,7 @@ void setup() {
 	theHttpGs2200.config(HTTP_HEADER_HOST, HTTP_SRVR_IP);
 
 	digitalWrite(LED0, HIGH); // turn on LED
-
-  audioFile = SD.open("voice_to_send/001.wav", FILE_READ);
-  if (audioFile) {
-    Serial.println("001.wav:");
-    // int bufSize = sizeof(audioFile);
-    unsigned long fileSize = audioFile.size();
-    Serial.print("file size:");
-    Serial.print(fileSize);
-    Serial.println(" B");
-
-    audioDataBin = (char*)calloc(fileSize,sizeof(char));
-    
-    //copy to array
-    for(int i=0;i<fileSize;i++){
-      audioDataBin[i] = audioFile.read();
-    }
-    audioFile.seek(0);//set pointer to zero
-
-    //show array
-    // for(int i=0;i<fileSize;i++){
-    //   Serial.print(audioDataBin[i],HEX);
-    //   Serial.print(",");
-    // }
-    // Serial.println();
-    
-    /* Read from the file until there's nothing else in it */
-    // while (audioFile.available()) {
-    //   // Serial.write(audioFile.read());
-    //   Serial.print(audioFile.read(),HEX);
-    //   Serial.print(",");
-    // }
-    // Serial.println();
-    /* Close the file */
-    audioFile.close();
-  } else {
-    /* If the file didn't open, print an error */
-    Serial.println("error opening 001.wav");
-  }
-
+  httpStat = POST;
 }
 
 // バイナリデータを16進数文字列に変換する関数
@@ -138,123 +103,248 @@ void setup() {
 // }
 
 // the loop function runs over and over again forever
+
 void loop() {
-	httpStat = POST;
 	bool result = false;
 	// static int count = 0;
+  switch(httpStat){
+    case POST:
+      audioFile = SD.open("voice_to_send/001.wav", FILE_READ);
+      if (audioFile) {
+        Serial.println("001.wav:");
+        unsigned long fileSize = audioFile.size();
+        Serial.print("file size:");
+        Serial.print(fileSize);
+        Serial.println(" B");
 
-	while (1) {
-		switch (httpStat) {
-		case POST:
-			theHttpGs2200.config(HTTP_HEADER_TRANSFER_ENCODING, "chunked");
-			//create post data.
-			// snprintf(sendData, sizeof(sendData), "data=%d", count);
-			// snprintf(sendData, sizeof(sendData), "%d", audioDataBin[i]);//ここ，sendDataに100Byteずつコピーする実装にしたい
-      
-      //バイナリデータを文字列に変換(データサイズは倍になるが仕方ない...)
-      // audioDataStr = (char*)calloc(sizeof(audioDataBin)*2+1,sizeof(char));//配列確保(+1は終端Null文字)
-      // audioDataStr = (char*)calloc(50+1,sizeof(char));//配列確保(+1は終端Null文字)
+        // audioDataBin = (char*)calloc(fileSize,sizeof(char));//ここを固定長に変更する．ポインタをずらして複数回送信する．
+        int maxSendTimes = (fileSize/sizeof(audioDataBin)) + 1;//postで送信する回数
 
-      //Show Bin Array(first 10)
-      Serial.print("BIN:");
-      for(int i=0;i<10;i++){
-        Serial.print(audioDataBin[i],HEX);
-        Serial.print(",");
+        audioFile.seek(0);//set pointer to zero    
+        for(int send_i = 0;send_i<maxSendTimes;send_i++){
+          Serial.print("Sending data ");
+          Serial.print(send_i+1);
+          Serial.print("/");
+          Serial.print(maxSendTimes);
+          Serial.println();
+          //ファイルから固定長データを順番に読み込み
+          int end = sizeof(audioDataBin);
+          if(send_i == maxSendTimes-1){
+            for(int i=0;audioFile.available();i++){//最後のフレームよみこみ
+              audioDataBin[i] = audioFile.read();
+              end = i;
+            }
+            end += 1;
+            httpStat = GET;
+          }else{
+            for(int i=0;i<sizeof(audioDataBin);i++){
+              audioDataBin[i] = audioFile.read();
+            }
+          }
+          //POST
+          theHttpGs2200.config(HTTP_HEADER_TRANSFER_ENCODING, "chunked");
+          //create post data.
+          //Show Bin Array
+          // Serial.print("BIN:");
+          // for(int i=0;i<sizeof(audioDataBin);i++){
+          //   Serial.print(audioDataBin[i],HEX);
+          //   Serial.print(",");
+          // }
+          // Serial.println();
+          
+          //バイナリを文字(ASCII)に変換．(データサイズは倍になるが仕方ない...)
+          for(int i=0;i<sizeof(audioDataBin);i++){
+            int d1 = audioDataBin[i] >> 4;//0x??の上位桁.4bit右シフトして取り出す．
+            int d2 = audioDataBin[i] & 15;//0x??の下位桁.ビットマスク(0b00001111)の積で取り出す．
+            itoa(d1,&audioDataStr[i*2],16);
+            itoa(d2,&audioDataStr[(i*2)+1],16);
+          }
+          audioDataStr[end*2] = '\0';//add Null string
+
+          //Show String(ASCII) Array(first 10)
+          // Serial.print("STR:");
+          // for(int i=0;i<sizeof(audioDataStr);i++){
+          //   Serial.print(audioDataStr[i],HEX);
+          //   Serial.print(",");
+          // }
+          // Serial.println();
+
+          // memcpy(sendData,audioDataStr,sizeof(sendData));//送信バッファにコピー
+          //送信バッファ表示
+          // Serial.print("sendData:");
+          // for(int i=0;i<sizeof(sendData);i++){
+          //   Serial.print(sendData[i],HEX);
+          //   Serial.print(",");
+          // }
+          // Serial.println();
+          // result = theHttpGs2200.post(HTTP_POST_PATH, sendData);
+          result = theHttpGs2200.post(HTTP_POST_PATH, audioDataStr);
+          //result = theHttpGs2200.post(HTTP_POST_PATH, audioDataBin);//ちょくでわたすのはむりだった(Byteだと0x00が登場した時点でNull文字と判断されてpostが終了される．strlen()でデータサイズを調べているライブラリの仕様がカス．)
+          if (false == result) {
+            break;
+          }
+
+          do {
+            result = theHttpGs2200.receive(5000);
+            if (result) {
+              theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+              // ConsolePrintf("%s", (char *)(Receive_Data));
+            } else {
+              // AT+HTTPSEND command is done
+              // ConsolePrintf( "\r\n");
+            }
+          } while (result);
+
+          result = theHttpGs2200.end();
+          // delay(100);
+          // httpStat = GET;
+          // break;
+        }
+        /* Close the file */
+        audioFile.close();
+        //終了通知
+        result = theHttpGs2200.post(HTTP_POST_PATH, "end");
+        if (false == result) {
+          break;
+        }
+
+        do {
+          result = theHttpGs2200.receive(5000);
+          if (result) {
+            theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+            // ConsolePrintf("%s", (char *)(Receive_Data));
+          } else {
+            // AT+HTTPSEND command is done
+            // ConsolePrintf( "\r\n");
+          }
+        } while (result);
+
+        result = theHttpGs2200.end();
+      } else {
+        /* If the file didn't open, print an error */
+        Serial.println("error opening 001.wav");
       }
-      Serial.println();
-      
-      //binaryToHex(audioDataBin, sizeof(audioDataBin), audioDataStr);//データ変換&コピー
+      break;
+    case GET:
+      theHttpGs2200.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
 
-      //Show Str Array(first 10)
-      Serial.print("ITA:");
-      
-      //バイナリを文字(ASCII)に変換．
-      for(int i=0;i<101;i++){
-        int d1 = audioDataBin[i] >> 4;//0x??の上位桁.4bit右シフトして取り出す．
-        int d2 = audioDataBin[i] & 15;//0x??の下位桁.ビットマスク(0b00001111)の積で取り出す．
-        Serial.print(d1);
-        Serial.print("-");
-        itoa(d1,&audioDataStr[i*2],16);
-        Serial.print(d2);
-        itoa(d2,&audioDataStr[(i*2)+1],16);
-        Serial.print("->");
-        Serial.print(audioDataStr[i*2],HEX);
-        Serial.print(audioDataStr[i*2+1],HEX);
-        Serial.print(",");
+      result = theHttpGs2200.get(HTTP_GET_PATH);
+      if (true == result) {
+        theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+        parse_httpresponse((char *)(Receive_Data));
+      } else {
+        ConsoleLog( "?? Unexpected HTTP Response ??" );
       }
-      Serial.println();
-      audioDataStr[sizeof(audioDataStr)] = '\0';//add Null string
 
-      //Show String(ASCII) Array(first 10)
-      Serial.print("STR:");
-      for(int i=0;i<20;i++){
-        Serial.print(audioDataStr[i],HEX);
-        Serial.print(",");
-      }
-      Serial.println();
+      do {
+        result = theHttpGs2200.receive(5000);
+        if (result) {
+          theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+          ConsolePrintf("%s", (char *)(Receive_Data));
+        } else {
+          // AT+HTTPSEND command is done
+          ConsolePrintf( "\r\n");
+        }
+      } while (result);
 
-      memcpy(sendData,audioDataStr,SEND_BUF_SIZE);//送信バッファにコピー
-      //送信バッファ表示
-      Serial.print("sendData:");
-      for(int i=0;i<SEND_BUF_SIZE;i++){
-        Serial.print(sendData[i],HEX);
-        Serial.print(",");
-      }
-      Serial.println();
-			result = theHttpGs2200.post(HTTP_POST_PATH, sendData);
-			//result = theHttpGs2200.post(HTTP_POST_PATH, audioDataBin);//ちょくでわたすのはむりだった(Byteだと0x00が登場した時点でNull文字と判断されてpostが終了される．strlen()でデータサイズを調べているライブラリの仕様がカス．)
-			if (false == result) {
-				break;
-			}
+      result = theHttpGs2200.end();
+      delay(100000);
+      break;
+    default:
+      break;
+  }
+      //----------------------------------------------
+      // while (1) {
+      //   switch (httpStat) {
+      //   case POST:
+      //     //POST
+      //     theHttpGs2200.config(HTTP_HEADER_TRANSFER_ENCODING, "chunked");
+      //     //create post data.
+      //     //Show Bin Array
+      //     Serial.print("BIN:");
+      //     for(int i=0;i<sizeof(audioDataBin);i++){
+      //       Serial.print(audioDataBin[i],HEX);
+      //       Serial.print(",");
+      //     }
+      //     Serial.println();
+          
+      //     //バイナリを文字(ASCII)に変換．(データサイズは倍になるが仕方ない...)
+      //     for(int i=0;i<sizeof(audioDataBin);i++){
+      //       int d1 = audioDataBin[i] >> 4;//0x??の上位桁.4bit右シフトして取り出す．
+      //       int d2 = audioDataBin[i] & 15;//0x??の下位桁.ビットマスク(0b00001111)の積で取り出す．
+      //       itoa(d1,&audioDataStr[i*2],16);
+      //       itoa(d2,&audioDataStr[(i*2)+1],16);
+      //     }
+      //     audioDataStr[sizeof(audioDataStr)] = '\0';//add Null string
 
-			do {
-				result = theHttpGs2200.receive(5000);
-				if (result) {
-					theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
-					ConsolePrintf("%s", (char *)(Receive_Data));
-				} else {
-					// AT+HTTPSEND command is done
-					ConsolePrintf( "\r\n");
-				}
-			} while (result);
+      //     //Show String(ASCII) Array(first 10)
+      //     Serial.print("STR:");
+      //     for(int i=0;i<sizeof(audioDataStr);i++){
+      //       Serial.print(audioDataStr[i],HEX);
+      //       Serial.print(",");
+      //     }
+      //     Serial.println();
 
-			result = theHttpGs2200.end();
+      //     memcpy(sendData,audioDataStr,SEND_BUF_SIZE);//送信バッファにコピー
+      //     //送信バッファ表示
+      //     Serial.print("sendData:");
+      //     for(int i=0;i<SEND_BUF_SIZE;i++){
+      //       Serial.print(sendData[i],HEX);
+      //       Serial.print(",");
+      //     }
+      //     Serial.println();
+      //     result = theHttpGs2200.post(HTTP_POST_PATH, sendData);
+      //     //result = theHttpGs2200.post(HTTP_POST_PATH, audioDataBin);//ちょくでわたすのはむりだった(Byteだと0x00が登場した時点でNull文字と判断されてpostが終了される．strlen()でデータサイズを調べているライブラリの仕様がカス．)
+      //     if (false == result) {
+      //       break;
+      //     }
 
-			delay(1000);
-			// count+=100;
-			httpStat = GET;
-			break;
-			
-		case GET:
-			theHttpGs2200.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
+      //     do {
+      //       result = theHttpGs2200.receive(5000);
+      //       if (result) {
+      //         theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+      //         ConsolePrintf("%s", (char *)(Receive_Data));
+      //       } else {
+      //         // AT+HTTPSEND command is done
+      //         ConsolePrintf( "\r\n");
+      //       }
+      //     } while (result);
 
-			result = theHttpGs2200.get(HTTP_GET_PATH);
-			if (true == result) {
-				theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
-				parse_httpresponse((char *)(Receive_Data));
-			} else {
-				ConsoleLog( "?? Unexpected HTTP Response ??" );
-			}
+      //     result = theHttpGs2200.end();
 
- 			do {
-				result = theHttpGs2200.receive(5000);
-				if (result) {
-					theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
-					ConsolePrintf("%s", (char *)(Receive_Data));
-				} else {
-					// AT+HTTPSEND command is done
-					ConsolePrintf( "\r\n");
-				}
-			} while (result);
+      //     delay(1000);
+      //     httpStat = GET;
+      //     break;
+          
+      //   case GET:
+      //     theHttpGs2200.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
 
-			result = theHttpGs2200.end();
+      //     result = theHttpGs2200.get(HTTP_GET_PATH);
+      //     if (true == result) {
+      //       theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+      //       parse_httpresponse((char *)(Receive_Data));
+      //     } else {
+      //       ConsoleLog( "?? Unexpected HTTP Response ??" );
+      //     }
 
-			delay(20000);
-			httpStat = POST;
-			break;
-		default:
-			break;
-		}
-	}
-  free(audioDataBin);
+      //     do {
+      //       result = theHttpGs2200.receive(5000);
+      //       if (result) {
+      //         theHttpGs2200.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+      //         ConsolePrintf("%s", (char *)(Receive_Data));
+      //       } else {
+      //         // AT+HTTPSEND command is done
+      //         ConsolePrintf( "\r\n");
+      //       }
+      //     } while (result);
+
+      //     result = theHttpGs2200.end();
+
+      //     delay(20000);
+      //     httpStat = POST;
+      //     break;
+      //   default:
+      //     break;
+      //   }
+      // }
 }

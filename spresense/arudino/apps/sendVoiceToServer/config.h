@@ -9,7 +9,7 @@
 
 // #define  HTTP_SRVR_IP  "163.221.127.23"
 // #define  HTTP_SRVR_IP  "192.168.150.122"
-#define  HTTP_SRVR_IP  "163.221.195.72"
+#define  HTTP_SRVR_IP  "163.221.127.141"
 #define  HTTP_PORT     "3000"
 #define  HTTP_GET_PATH "/"
 #define  HTTP_POST_PATH "/postData"
