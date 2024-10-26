@@ -7,8 +7,9 @@ from gtts import gTTS
 from playsound import playsound
 import openai
 from openai import RateLimitError, Timeout, APIError, APIConnectionError, OpenAIError
-import datetime
+import datetime 
 import json
+import wave
 
 
 # Google Cloud APIキーの設定
@@ -22,13 +23,12 @@ CHUNK = int(RATE / 10)  # 100ms
 # ChatGPT APIの設定
 CHATGPT_API_KEY_PATH = "../../../../config/openai/chatGPT_api.txt"
 FORMAT = """
-        speak japanese.
-        speak 北摂弁.
-        your name is さこちゃん.
+        Your name is Sako-chan. Speak in Japanese, using Hokusei dialect.
         """
 
-# 読み上げ音声ファイル
-FILE_NAME = "speech.mp3"
+# 利用ファイル
+RESPONSE_AUDIO = "response.mp3" # テキスト読み上げ音声ファイル
+QUESTION_AUDIO = "question.mp3" # 録音音声保存用ファイル
 CHAT_HISTORY_FILE = "chat_history.json"  # 履歴を保存するファイル
 
 def record_audio():
@@ -67,40 +67,49 @@ def record_audio():
     stream.close()
     audio.terminate()
 
-    return b''.join(frames)
+    # 録音データをmp3形式で保存
+    with wave.open(QUESTION_AUDIO, 'wb') as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
 
-def transcribe_speech(audio_data):
-    if audio_data is None:
-        print("No audio data to transcribe.")
-        return
-    
-    audio = speech.RecognitionAudio(content=audio_data)
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=RATE,
-        language_code='ja-JP'
-    )
+# 音声からテキスト生成
+def transcribe_speech():
+    try:
+        with open(QUESTION_AUDIO, 'rb') as f:
+            content = f.read()
+        
+        audio = speech.RecognitionAudio(content=content)
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=RATE,
+            language_code='ja-JP'
+        )
+        response = client.recognize(config=config, audio=audio)
 
-    response = client.recognize(config=config, audio=audio)
+        text = ""
+        for result in response.results:
+            text += result.alternatives[0].transcript
 
-    text = ""
-    for result in response.results:
-        text = text + result.alternatives[0].transcript
+        return text
 
-    return text
+    except FileNotFoundError:
+        print("Audio file not found.")
+        return None
 
 # ChatGPTのAPIキー取得
 def read_keyFile():
     try:
-        with open(CHATGPT_API_KEY_PATH, 'r', encoding='utf-8') as file:
-            key = file.readline().strip()
+        with open(CHATGPT_API_KEY_PATH, 'r', encoding='utf-8') as f:
+            key = f.readline().strip()
         return key
     except FileNotFoundError:
         return "ファイルが見つかりません。"
     except Exception as e:
         return f"エラーが発生しました: {e}"
 
-# ファイルから履歴を読み込む
+# ファイルから会話履歴を読み込む
 def load_chat_history():
     try:
         with open(CHAT_HISTORY_FILE, 'r', encoding='utf-8') as f:
@@ -108,11 +117,20 @@ def load_chat_history():
     except FileNotFoundError:
         return []  # ファイルがなければ空のリストを返す
 
-# 履歴をファイルに保存する
+# 会話履歴をファイルに保存する
 def save_chat_history(messages):
     with open(CHAT_HISTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(messages, f, ensure_ascii=False, indent=4)
 
+# 会話履歴を初期化する
+def initialize_chat_history():
+    empty_history = []  # 空のリストで初期化
+    with open(CHAT_HISTORY_FILE, 'w', encoding='utf-8') as f:
+        json.dump(empty_history, f, ensure_ascii=False, indent=4)
+    print("Chat history has been initialized.")
+
+
+# ChatGPTに質問テキストを渡して返答テキストを受け取る
 def receive_GPT_response(question):
     openai.api_key = read_keyFile()
 
@@ -138,22 +156,22 @@ def receive_GPT_response(question):
     except openai.OpenAIError as e:
         print(f"OpenAIのエラーが発生しました: {e}")
 
-
     return answer
 
 # テキストを渡すと読み上げ音声を生成
 def create_speech_mp3(text):
-    if os.path.exists(FILE_NAME):
-        os.remove(FILE_NAME)
+    if os.path.exists(RESPONSE_AUDIO):
+        os.remove(RESPONSE_AUDIO)
 
     tts = gTTS(text, lang='ja')
-    tts.save(FILE_NAME)
+    tts.save(RESPONSE_AUDIO)
 
 # 音声再生（非同期）
 def play_audio():
-    playsound(FILE_NAME)
+    playsound(RESPONSE_AUDIO)
 
-def main():
+# 動作テスト（録音・生成・再生）
+def test():
     while True:
         command = input("Enter 'r' to start recording, 'c' to check microphone, 'q' to quit: ")
         if command.lower() == 'q':
@@ -161,8 +179,8 @@ def main():
             break
 
         if command.lower() == 'r':
-            audio_data = record_audio()
-            text = transcribe_speech(audio_data)
+            record_audio()
+            text = transcribe_speech()
             print(text)
             answer = receive_GPT_response(text)
             create_speech_mp3(answer)
@@ -171,4 +189,11 @@ def main():
             
             time.sleep(1)  # 録音後、再度待機状態に戻るための一時停止
 
-main()
+# 録音音声（QUESTION_AUDIO）を読み込み、返答音声（RESPONSE_AUDIO）を作成
+def main():
+    answer = receive_GPT_response(text)
+    create_speech_mp3(answer)
+
+#main()
+test()
+
