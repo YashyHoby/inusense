@@ -35,7 +35,7 @@ def receive_data():
     if(data_b.decode() == "end"):
         # バイナリデータをファイルに書き込む
         print(os.getcwd())
-        save_dir_path = './server/python/apps/HttpServer/'
+        save_dir_path = 'C:/MyProgram/ArduinoPrograms/inusense/server/python/apps/HttpServer/'
         file_name = 'recv.wav'
         if not os.path.exists(save_dir_path+file_name):
             print("saving...")
