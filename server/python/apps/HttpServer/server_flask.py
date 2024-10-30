@@ -1,5 +1,6 @@
 from flask import Flask,request
 import os
+import time
 
 app = Flask(__name__)
 
@@ -20,23 +21,34 @@ def body_to_bin(data_b:bytes):
     data_bin_row = b''.join([b if b != b'' else b'\x00' for b in data_bin_list])# バイナリデータ列にする．0x00が空バイトとしてエンコードされているので修正.ex,52,49,...→5249...
     return data_bin_row
 
+
+isReceiving = False
+start_t = time.time()
 # POSTリクエストを処理するエンドポイント
 @app.route('/postData', methods=['POST'])
 def receive_data():
+    global isReceiving
+    global start_t
+
+    if isReceiving == False:
+        start_t = time.time()
+        isReceiving = True
+
     # クライアントから送られたデータを取得
-    # data = request.get_data(as_text=True)  # 生のデータをテキスト形式で取得
-    data_b = request.get_data()  # 生のデータをテキスト形式で取得.
+    data_b = request.get_data()  # 生データ
     print(f"Received {len(data_b)} B data")
     data_b_hex = data_b.hex()#生データ(hex表記文字列).
     print(data_b_hex)# ex,35323439...
     print(f"Received POST data(hex): {data_b_hex}")
-    # B = ''.join([chr(int(data_hex_s[i:i+2])) for i in range(0, len(data_hex_s), 2)])
-    # print(B)
+
     if(data_b.decode() == "end"):
+        passed_time = time.time()-start_t
+        print(f"TIME:{passed_time}")
+        isReceiving = False
         # バイナリデータをファイルに書き込む
         print(os.getcwd())
         save_dir_path = 'C:/MyProgram/ArduinoPrograms/inusense/server/python/apps/HttpServer/'
-        file_name = 'recv.wav'
+        file_name = 'recv_nyan.jpg'
         if not os.path.exists(save_dir_path+file_name):
             print("saving...")
             with open(save_dir_path+file_name, 'wb') as f:

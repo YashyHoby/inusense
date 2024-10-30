@@ -86,15 +86,15 @@ void setup() {
 
 void loop() {
 	bool result = false;
+  char* filePath = "data_to_send/nyan.jpg";
   switch(httpStat){
     case POST:
-      file = SD.open("voice_to_send/001.wav", FILE_READ);
+      file = SD.open(filePath, FILE_READ);
       HttpFileSender.sendFile(file);
       httpStat = GET;
       break;
     case GET:
       HttpFileSender.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
-
       result = HttpFileSender.get(HTTP_GET_PATH);
       if (true == result) {
         HttpFileSender.read_data(Receive_Data, RECEIVE_PACKET_SIZE);

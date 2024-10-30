@@ -18,6 +18,6 @@ class HttpFileSender:public HttpGs2200
     uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
   public:
     HttpFileSender(TelitWiFi* wifi):HttpGs2200(wifi){};
-    void sendFile(File audioFile);
+    void sendFile(File file);
 };
 #endif
