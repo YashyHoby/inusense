@@ -1,1 +1,0 @@
-#define VOICE_DATA_DIR "voice_to_send"
