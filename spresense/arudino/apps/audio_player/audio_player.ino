@@ -26,6 +26,8 @@
 #include <SDHCI.h>
 #include <Audio.h>
 
+#define audioLevel -160
+
 SDClass theSD;
 AudioClass *theAudio;
 
@@ -124,8 +126,8 @@ void setup()
 
   puts("Play!");
 
-  /* Main volume set to -16.0 dB */
-  theAudio->setVolume(-160);
+  /* Main volume set */
+  theAudio->setVolume(audioLevel);
   theAudio->startPlayer(AudioClass::Player0);
 }
 
