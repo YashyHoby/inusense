@@ -181,7 +181,7 @@ void loop() {
     memset(hist, 0, frames*sizeof(float)); 
 
     // ラベル用テキスト
-    static const char label[4][10] = {"end", "next","start", "tadaima"};
+    static const char label[2][8] = {"itteki", "tadaima"};
     // DNNRTの入力データ用バッファ
     DNNVariable input(frames/2*fft_samples/2);
     
@@ -223,6 +223,7 @@ void loop() {
     value = output[index];
     Serial.println(String(label[index])  
          + " : " + String(value));
+  //TODO:トリガーによる条件分岐
 
     theAudio->startRecorder(); // レコーダーを再開
   }
