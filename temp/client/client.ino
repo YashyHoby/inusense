@@ -1,53 +1,63 @@
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <SD.h>
+#include <WiFiS110.h>
+#include <WiFiClient.h>
+#include <SDHCI.h>
+#include <File.h>
 
+// Wi-Fi接続情報
 const char* ssid = "Unchi";
 const char* password = "ahoaho13";
-const char* serverUrl = "http://192.168.166.66:3000/upload";
+
+// サーバ情報
+const char* serverIP = "192.168.166.66"; // PCのIPアドレス
+const int serverPort = 3000; // サーバのポート番号
+
+WiFiClient client;
 
 void setup() {
-    Serial.begin(115200);
-    WiFi.begin(ssid, password);
+  Serial.begin(115200);
 
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Serial.println("WiFiに接続中...");
-    }
-    Serial.println("WiFiに接続しました");
+  // Wi-Fi接続
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Wi-Fiに接続中...");
+  }
+  Serial.println("Wi-Fiに接続しました。");
 
-    if (!SD.begin()) {
-        Serial.println("SDカードのマウントに失敗しました");
-        return;
-    }
+  // SDカードの初期化
+  if (!SD.begin()) {
+    Serial.println("SDカードの初期化に失敗しました。");
+    return;
+  }
 }
 
 void loop() {
-    if (WiFi.status() == WL_CONNECTED) {
-        HTTPClient http;
-        http.begin(serverUrl);
-        http.addHeader("Content-Type", "audio/mpeg");
+  // MP3ファイルのパス
+  const char* mp3FilePath = "/mnt/sd0/MP3/test.mp3";
+  File mp3File = SD.open(mp3FilePath);
 
-        File mp3File = SD.open("audio/Morning_10s.mp3", FILE_READ);
-        if (mp3File) {
-            int fileSize = mp3File.size();
-            uint8_t* fileBuffer = new uint8_t[fileSize];
-            mp3File.read(fileBuffer, fileSize);
-            mp3File.close();
+  if (!mp3File) {
+    Serial.println("MP3ファイルのオープンに失敗しました。");
+    return;
+  }
 
-            int httpResponseCode = http.POST(fileBuffer, fileSize);
-            if (httpResponseCode > 0) {
-                Serial.printf("ファイルを送信しました。レスポンスコード: %d\n", httpResponseCode);
-            } else {
-                Serial.printf("送信エラー: %s\n", http.errorToString(httpResponseCode).c_str());
-            }
+  // サーバに接続
+  if (client.connect(serverIP, serverPort)) {
+    Serial.println("サーバに接続しました。");
 
-            delete[] fileBuffer;
-        } else {
-            Serial.println("MP3ファイルの読み込みに失敗しました");
-        }
-
-        http.end();
+    // MP3データの送信
+    while (mp3File.available()) {
+      byte buffer[1024];
+      int bytesRead = mp3File.read(buffer, sizeof(buffer));
+      client.write(buffer, bytesRead);
     }
-    delay(10000);
+
+    Serial.println("MP3ファイルの送信が完了しました。");
+    client.stop();
+  } else {
+    Serial.println("サーバへの接続に失敗しました。");
+  }
+
+  mp3File.close();
+  delay(10000); // 必要に応じて調整
 }
