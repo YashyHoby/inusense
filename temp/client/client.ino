@@ -1,63 +1,61 @@
-#include <WiFiS110.h>
+#include <WiFi.h>
 #include <WiFiClient.h>
-#include <SDHCI.h>
-#include <File.h>
+#include <WiFiServer.h>
 
-// Wi-Fi接続情報
-const char* ssid = "Unchi";
-const char* password = "ahoaho13";
+#include "config.h"        // その他の設定用ファイル（IPアドレスなど）
 
-// サーバ情報
-const char* serverIP = "192.168.166.66"; // PCのIPアドレス
-const int serverPort = 3000; // サーバのポート番号
+const char* ssid = AP_SSID;
+const char* password = PASSPHRASE;
+const char* serverIp = HTTP_SRVR_IP; // PCのPythonサーバーのIPアドレス
+const int serverPort = HTTP_PORT;          // Pythonサーバーで待機しているポート番号
 
 WiFiClient client;
 
 void setup() {
-  Serial.begin(115200);
+    Serial.begin(115200);
+    while (!Serial) {}
 
-  // Wi-Fi接続
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Wi-Fiに接続中...");
-  }
-  Serial.println("Wi-Fiに接続しました。");
-
-  // SDカードの初期化
-  if (!SD.begin()) {
-    Serial.println("SDカードの初期化に失敗しました。");
-    return;
-  }
+    // WiFiに接続
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.println("Connecting to WiFi...");
+    }
+    Serial.println("Connected to WiFi");
 }
 
 void loop() {
-  // MP3ファイルのパス
-  const char* mp3FilePath = "/mnt/sd0/MP3/test.mp3";
-  File mp3File = SD.open(mp3FilePath);
+    if (client.connect(serverIp, serverPort)) {
+        Serial.println("Connected to server");
 
-  if (!mp3File) {
-    Serial.println("MP3ファイルのオープンに失敗しました。");
-    return;
-  }
+        // MP3ファイルの送信
+        sendMP3File("/mnt/audio/Moning_10s.mp3");
 
-  // サーバに接続
-  if (client.connect(serverIP, serverPort)) {
-    Serial.println("サーバに接続しました。");
+        client.stop(); // 接続を終了
+        delay(5000);   // 次の送信まで待機
+    } else {
+        Serial.println("Failed to connect to server");
+    }
+}
 
-    // MP3データの送信
-    while (mp3File.available()) {
-      byte buffer[1024];
-      int bytesRead = mp3File.read(buffer, sizeof(buffer));
-      client.write(buffer, bytesRead);
+void sendMP3File(const char* filePath) {
+    File mp3File = SPIFFS.open(filePath, "r");
+    if (!mp3File) {
+        Serial.println("Failed to open file");
+        return;
     }
 
-    Serial.println("MP3ファイルの送信が完了しました。");
-    client.stop();
-  } else {
-    Serial.println("サーバへの接続に失敗しました。");
-  }
+    // ファイルサイズを取得し、送信
+    size_t fileSize = mp3File.size();
+    client.write((uint8_t*)&fileSize, sizeof(fileSize)); // 先頭にファイルサイズを送信
+    delay(10);
 
-  mp3File.close();
-  delay(10000); // 必要に応じて調整
+    // ファイルデータを送信
+    uint8_t buffer[1024];
+    while (mp3File.available()) {
+        size_t bytesRead = mp3File.read(buffer, sizeof(buffer));
+        client.write(buffer, bytesRead);
+    }
+    mp3File.close();
+    Serial.println("File sent successfully");
 }
