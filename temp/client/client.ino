@@ -2,9 +2,9 @@
 #include <ESP8266HTTPClient.h>
 #include <SD.h>
 
-const char* ssid = "Your_SSID";
-const char* password = "Your_Password";
-const char* serverUrl = "http://<PythonサーバーのIPアドレス>:<ポート番号>/upload";
+const char* ssid = "Unchi";
+const char* password = "ahoaho13";
+const char* serverUrl = "http://192.168.166.66:3000/upload";
 
 void setup() {
     Serial.begin(115200);
