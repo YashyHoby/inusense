@@ -1,5 +1,6 @@
-#include <WiFi.h>
-#include <HTTPClient.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
+#include <SD.h>
 
 const char* ssid = "Your_SSID";
 const char* password = "Your_Password";
@@ -11,9 +12,14 @@ void setup() {
 
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
-        Serial.println("Connecting to WiFi...");
+        Serial.println("WiFiに接続中...");
     }
-    Serial.println("Connected to WiFi");
+    Serial.println("WiFiに接続しました");
+
+    if (!SD.begin()) {
+        Serial.println("SDカードのマウントに失敗しました");
+        return;
+    }
 }
 
 void loop() {
@@ -31,14 +37,14 @@ void loop() {
 
             int httpResponseCode = http.POST(fileBuffer, fileSize);
             if (httpResponseCode > 0) {
-                Serial.printf("File sent, response: %d\n", httpResponseCode);
+                Serial.printf("ファイルを送信しました。レスポンスコード: %d\n", httpResponseCode);
             } else {
-                Serial.printf("Error: %s\n", http.errorToString(httpResponseCode).c_str());
+                Serial.printf("送信エラー: %s\n", http.errorToString(httpResponseCode).c_str());
             }
 
             delete[] fileBuffer;
         } else {
-            Serial.println("Failed to open file for reading");
+            Serial.println("MP3ファイルの読み込みに失敗しました");
         }
 
         http.end();

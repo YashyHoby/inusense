@@ -6,15 +6,15 @@ app = Flask(__name__)
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return "No file part", 400
+        return "ファイルが見つかりません", 400
 
     file = request.files['file']
     if file.filename == '':
-        return "No selected file", 400
+        return "ファイルが選択されていません", 400
 
     save_path = os.path.join('received_files', file.filename)
     file.save(save_path)
-    return "File uploaded successfully", 200
+    return "ファイルのアップロードに成功しました", 200
 
 if __name__ == '__main__':
     if not os.path.exists('received_files'):
