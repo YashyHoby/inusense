@@ -6,7 +6,7 @@ HttpGs2200クラスを継承し，ファイル送信する関数を追加した�
 
 #ifndef HttpFileSender_h
 #define HttpFileSender_h
-#include <SDHCI.h>
+#include "GlobalVariables.h"
 #include <HttpGs2200.h>
 #include <TelitWiFi.h>
 #include "config.h"
