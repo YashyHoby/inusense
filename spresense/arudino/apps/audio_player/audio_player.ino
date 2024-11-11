@@ -48,7 +48,7 @@ static void audio_attention_cb(const ErrorAttentionParam *atprm)
   if (atprm->error_code >= AS_ATTENTION_CODE_WARNING)
     {
       ErrEnd = true;
-   }
+  }
 }
 
 /**

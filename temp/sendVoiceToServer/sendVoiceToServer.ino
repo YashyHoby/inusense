@@ -86,7 +86,7 @@ void setup() {
 
 void loop() {
 	bool result = false;
-  char* filePath = "data_to_send/nyan.jpg";
+  char* filePath = "audio/Morning_10s.mp3";
   switch(httpStat){
     case POST:
       file = SD.open(filePath, FILE_READ);
