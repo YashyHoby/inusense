@@ -4,12 +4,12 @@
 #include "GlobalVariables.h"
 #include <HttpGs2200.h>
 #include <TelitWiFi.h>
-#include "HttpFileSender.h"
+#include "CustomHttpGs.h"
 #include "config.h"
 
 extern TelitWiFi gs2200;
 extern TWIFI_Params gsparams;
-extern HttpFileSender httpFileSender;
+extern CustomHttpGs theCustomHttpGs;
 extern HTTPGS2200_HostParams hostParams;
 
 typedef enum {
@@ -22,6 +22,7 @@ extern DEMO_STATUS_E httpStat;
 void parse_httpresponse(char *message);
 void initialize_http();
 void handleHttpPost(const char* filePath);
-void handleHttpGet();
+void handleHttpGet(const char* saveFilePath);
+void downloadAudioFile(const char* saveFilePath);
 
 #endif /* HTTPCLIENT_H */

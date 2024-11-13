@@ -2,7 +2,7 @@
 
 TelitWiFi gs2200;
 TWIFI_Params gsparams;
-HttpFileSender httpFileSender(&gs2200);
+CustomHttpGs theCustomHttpGs(&gs2200);
 HTTPGS2200_HostParams hostParams;
 DEMO_STATUS_E httpStat;
 
@@ -30,14 +30,14 @@ void initialize_http() {
 
     hostParams.host = (char *)HTTP_SRVR_IP;
     hostParams.port = (char *)HTTP_PORT;
-    httpFileSender.begin(&hostParams);
+    theCustomHttpGs.begin(&hostParams);
 
     ConsoleLog("Start HTTP Client");
 
-    httpFileSender.config(HTTP_HEADER_AUTHORIZATION, "Basic dGVzdDp0ZXN0MTIz");
-    httpFileSender.config(HTTP_HEADER_TRANSFER_ENCODING, "chunked");
-    httpFileSender.config(HTTP_HEADER_CONTENT_TYPE, "application/x-www-form-urlencoded");
-    httpFileSender.config(HTTP_HEADER_HOST, HTTP_SRVR_IP);
+    theCustomHttpGs.config(HTTP_HEADER_AUTHORIZATION, "Basic dGVzdDp0ZXN0MTIz");
+    theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "chunked");
+    theCustomHttpGs.config(HTTP_HEADER_CONTENT_TYPE, "application/x-www-form-urlencoded");
+    theCustomHttpGs.config(HTTP_HEADER_HOST, HTTP_SRVR_IP);
 
     digitalWrite(LED0, HIGH);
     httpStat = POST;
@@ -46,34 +46,90 @@ void initialize_http() {
 void handleHttpPost(const char* filePath) {
     //const char* filePath = "audio/Morning_10s.mp3";
     myFile = theSD.open(filePath, FILE_READ);
-    httpFileSender.sendFile(myFile);
+    theCustomHttpGs.sendFile(myFile);
     httpStat = GET;
 }
 
-void handleHttpGet() {
+void handleHttpGet(const char* saveFileName) {
     const uint16_t RECEIVE_PACKET_SIZE = 1500;
     uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
     bool result = false;
 
-    httpFileSender.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
-    result = httpFileSender.get(HTTP_GET_PATH);
+    if (theSD.exists(saveFileName))
+    {
+        Serial.print("Remove existing file [");
+        Serial.print(saveFileName);
+        Serial.println("].");
+        theSD.remove(saveFileName);
+    }
+
+    // SDカードにファイルを作成
+    myFile = theSD.open(saveFileName, FILE_WRITE);
+
+    if (!myFile) {
+        Serial.println("File open error");
+        return;
+    }
+
+    theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
+    result = theCustomHttpGs.get(HTTP_GET_PATH);
     if (result) {
-        httpFileSender.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+        theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
         parse_httpresponse((char *)(Receive_Data));
+        myFile.write(Receive_Data, RECEIVE_PACKET_SIZE);  //
     } else {
         ConsoleLog("Unexpected HTTP Response");
     }
 
     do {
-        result = httpFileSender.receive(5000);
+        result = theCustomHttpGs.receive(5000);
         if (result) {
-            httpFileSender.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+            theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
             ConsolePrintf("%s", (char *)(Receive_Data));
         } else {
             ConsolePrintf("\r\n");
         }
     } while (result);
 
-    httpFileSender.end();
-    delay(100000);
+    myFile.close();//
+    theCustomHttpGs.end();
 }
+
+/*
+void downloadAudioFile(const char* saveFileName) {
+    const uint16_t BUFFER_SIZE = 4096;
+    uint8_t buffer[BUFFER_SIZE];
+
+
+    if (theSD.exists(saveFileName))
+    {
+        Serial.print("Remove existing file [");
+        Serial.print(saveFileName);
+        Serial.println("].");
+        theSD.remove(saveFileName);
+    }
+
+    // SDカードにファイルを作成
+    myFile = theSD.open(saveFileName, FILE_WRITE);
+
+    if (!myFile) {
+        Serial.println("File open error");
+        return;
+    }
+
+    if (theCustomHttpGs.get(HTTP_GET_PATH)) {
+        Serial.println("HTTP GET request sent");
+
+        do {
+            theCustomHttpGs.read_data(buffer, BUFFER_SIZE);  // 受信したデータをバッファに格納
+            myFile.write(buffer, BUFFER_SIZE);  // バッファ内容をSDカードに書き込み
+        } while ();
+
+        Serial.println("Audio file download complete");
+    } else {
+        Serial.println("HTTP GET request failed");
+    }
+
+    myFile.close();
+    theCustomHttpGs.end();
+}*/

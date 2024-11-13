@@ -5,10 +5,10 @@ import time
 app = Flask(__name__)
 
 # GETリクエストを処理するエンドポイント
-@app.route('/', methods=['GET'])
+@app.route('/getData', methods=['GET'])
 def hello():
-    return "Hello from Flask!"
-
+    audio_file_path = 'path/to/your/audio.mp3'  # 音声ファイルの実際のパスに変更
+    return send_file(audio_file_path, mimetype='audio/mpeg')
 
 # パケットを一時的に保存するリスト
 received_packets = []

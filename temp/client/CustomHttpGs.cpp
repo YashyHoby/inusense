@@ -1,4 +1,4 @@
-#include "HttpFileSender.h"
+#include "CustomHttpGs.h"
 
 /*
 親クラスのpost()関数は送信するデータとして文字列のみを想定した仕様になっている．(NULL文字'\0'(0x00)が途中に含まれるデータを最後まで送信できない．)
@@ -6,7 +6,7 @@
 ファイルは固定長のバッファ(fileDataBin)に読み込まれ，変換されバッファ(fileDataStr)に格納した後複数回に分けて送信される．
 なぜか最初の4096Bのフレームが送信されない問題...(10/30)
 */
-void HttpFileSender::sendFile(File file){
+void CustomHttpGs::sendFile(File file){
 	bool result = false;
   const uint16_t SEND_BUF_SIZE = 4096;
   static char fileDataBin[SEND_BUF_SIZE];

@@ -51,7 +51,7 @@ void rec_audio_mp3(const char* recFileName)
   if (!myFile)
   {
     Serial.println("File open error");
-    exit(1);
+    return;
   }
 
   Serial.print("Open! [");
