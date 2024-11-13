@@ -14,6 +14,7 @@ void parse_httpresponse(char *message) {
 }
 
 void initialize_http() {
+    
     Init_GS2200_SPI_type(iS110B_TypeC);
 
     gsparams.mode = ATCMD_MODE_STATION;
@@ -50,7 +51,9 @@ void handleHttpPost(const char* filePath) {
     httpStat = GET;
 }
 
+/*
 void handleHttpGet(const char* saveFileName) {
+    Serial.print("get audio from server");
     const uint16_t RECEIVE_PACKET_SIZE = 1500;
     uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
     bool result = false;
@@ -73,16 +76,17 @@ void handleHttpGet(const char* saveFileName) {
 
     theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
     result = theCustomHttpGs.get(HTTP_GET_PATH);
-    if (result) {
-        theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
-        parse_httpresponse((char *)(Receive_Data));
-        myFile.write(Receive_Data, RECEIVE_PACKET_SIZE);  //
-    } else {
-        ConsoleLog("Unexpected HTTP Response");
+    Serial.println(result);
+    if (!result) {
+        Serial.println("HTTP GET request failed.");
+        myFile.close();
+        return;
     }
 
     do {
+        Serial.println("unchi");
         result = theCustomHttpGs.receive(5000);
+        Serial.println(result);
         if (result) {
             theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
             ConsolePrintf("%s", (char *)(Receive_Data));
@@ -90,16 +94,16 @@ void handleHttpGet(const char* saveFileName) {
             ConsolePrintf("\r\n");
         }
     } while (result);
-
+    Serial.println("dd");
     myFile.close();//
     theCustomHttpGs.end();
-}
+}*/
 
-/*
+
 void downloadAudioFile(const char* saveFileName) {
-    const uint16_t BUFFER_SIZE = 4096;
-    uint8_t buffer[BUFFER_SIZE];
-
+    const uint16_t RECEIVE_PACKET_SIZE = 1500;
+    uint8_t buffer[RECEIVE_PACKET_SIZE];
+    bool result = false;
 
     if (theSD.exists(saveFileName))
     {
@@ -117,19 +121,30 @@ void downloadAudioFile(const char* saveFileName) {
         return;
     }
 
-    if (theCustomHttpGs.get(HTTP_GET_PATH)) {
-        Serial.println("HTTP GET request sent");
+    result = theCustomHttpGs.get(HTTP_GET_PATH);
 
-        do {
-            theCustomHttpGs.read_data(buffer, BUFFER_SIZE);  // 受信したデータをバッファに格納
-            myFile.write(buffer, BUFFER_SIZE);  // バッファ内容をSDカードに書き込み
-        } while ();
-
-        Serial.println("Audio file download complete");
-    } else {
-        Serial.println("HTTP GET request failed");
+    if (!result) {
+        Serial.println("Failed to send GET request");
+        return;
     }
+
+
+    Serial.println("HTTP GET request sent");
+
+    
+
+    do {
+        result = theCustomHttpGs.receive(2000);  // タイムアウトを設定
+        if (result) {
+            Serial.println("Hdsadfsdsent");
+            theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
+            ConsolePrintf("%s", (char *)(buffer));
+        }
+        //myFile.write(buffer, BUFFER_SIZE);  // バッファ内容をSDカードに書き込み
+    } while (result);
+
+    Serial.println("Hdsaft sent");
 
     myFile.close();
     theCustomHttpGs.end();
-}*/
+}

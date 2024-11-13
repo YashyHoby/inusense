@@ -22,7 +22,9 @@ void initialize_audio()
 {
   theAudio = AudioClass::getInstance();
   theAudio->begin(audio_attention_cb);
+  theAudio->setRenderingClockMode(AS_CLKMODE_NORMAL);
   Serial.println("Initialization Audio Library");
+  theAudio->setReadyMode();
 }
 
 void rec_audio_mp3(const char* recFileName)
@@ -102,12 +104,14 @@ void rec_audio_mp3(const char* recFileName)
 }
 
 void play_audio_mp3(const char* recFileName){
+  Serial.println("s!");
   theAudio->setPlayerMode(AS_SETPLAYER_OUTPUTDEVICE_SPHP, AS_SP_DRV_MODE_LINEOUT);
   /*
    * Set main player to decode stereo mp3. Stream sample rate is set to "auto detect"
    * Search for MP3 decoder in "/mnt/sd0/BIN" directory
    */
   err_t err = theAudio->initPlayer(AudioClass::Player0, AS_CODECTYPE_MP3, "/mnt/sd0/BIN", AS_SAMPLINGRATE_AUTO, AS_CHANNEL_STEREO);
+  Serial.println("sssfaes!");
 
   /* Verify player initialize */
   if (err != AUDIOLIB_ECODE_OK)
@@ -185,7 +189,7 @@ void play_audio_mp3(const char* recFileName){
     */
     usleep(40000);
   }
-  theAudio->stopPlayer(AudioClass::Player0, AS_STOPPLAYER_ESEND);
+  theAudio->stopPlayer(AudioClass::Player0, AS_STOPPLAYER_ESEND);\
   myFile.close();
   theAudio->setReadyMode();
 }

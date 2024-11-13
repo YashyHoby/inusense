@@ -5,7 +5,8 @@
 
 
 #define RECORD_FILE_NAME "record.mp3"
-#define RECEIVE_FILE_NAME "receive.mp3"
+#define RECEIVE_FILE_NAME "aa.mp3"
+#define PLAY_FILE_NAME "audio/Morning_10s.mp3"
 #define  CONSOLE_BAUDRATE  115200
 
 void setup()
@@ -23,7 +24,7 @@ void setup()
     Serial.println("Insert SD card.");
   }
 
-  //initialize_audio();
+  initialize_audio();
 
   initialize_http();
 }
@@ -41,13 +42,14 @@ void loop()
           handleHttpPost(RECORD_FILE_NAME);
           break;
       case GET:
-          handleHttpGet(RECEIVE_FILE_NAME);
+          downloadAudioFile(RECEIVE_FILE_NAME);
           //downloadAudioFile(RECEIVE_FILE_NAME);
           break;
       default:
           break;
   }
-  play_audio_mp3(RECEIVE_FILE_NAME);
+  Serial.println("next");
+  play_audio_mp3(PLAY_FILE_NAME);
   exit(1);
 }
 
@@ -57,7 +59,7 @@ void test_recAndPlay_mp3()
   rec_audio_mp3(RECORD_FILE_NAME);
   delay(10000);
   Serial.println("next!");
-  play_audio_mp3(RECORD_FILE_NAME);
+  play_audio_mp3(PLAY_FILE_NAME);
   Serial.println("end!");
   delay(50000);
 }
