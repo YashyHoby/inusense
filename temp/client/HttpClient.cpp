@@ -46,9 +46,10 @@ void initialize_http() {
 
 void handleHttpPost(const char* filePath) {
     //const char* filePath = "audio/Morning_10s.mp3";
-    myFile = theSD.open(filePath, FILE_READ);
+    File myFile = theSD.open(filePath, FILE_READ);
     theCustomHttpGs.sendFile(myFile);
     httpStat = GET;
+    myFile.close();
 }
 
 /*
@@ -114,17 +115,17 @@ void downloadAudioFile(const char* saveFileName) {
     }
 
     // SDカードにファイルを作成
-    myFile = theSD.open(saveFileName, FILE_WRITE);
-
+    File myFile = theSD.open(saveFileName, FILE_WRITE);
     if (!myFile) {
         Serial.println("File open error");
-        return;
     }
 
     result = theCustomHttpGs.get(HTTP_GET_PATH);
 
     if (!result) {
         Serial.println("Failed to send GET request");
+        theCustomHttpGs.end();
+        myFile.close();
         return;
     }
 
@@ -136,15 +137,22 @@ void downloadAudioFile(const char* saveFileName) {
     do {
         result = theCustomHttpGs.receive(2000);  // タイムアウトを設定
         if (result) {
-            Serial.println("Hdsadfsdsent");
             theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
-            ConsolePrintf("%s", (char *)(buffer));
+            myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
+            /* // バイナリで出力
+            for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
+                Serial.print(buffer[i], HEX);
+                Serial.print(" ");
+            } */
+            Serial.println("loading..");
+            usleep(40000);
         }
-        //myFile.write(buffer, BUFFER_SIZE);  // バッファ内容をSDカードに書き込み
+        
     } while (result);
 
-    Serial.println("Hdsaft sent");
 
-    myFile.close();
+    Serial.println("adaf");
     theCustomHttpGs.end();
+    Serial.println("dddddd");
+    myFile.close();
 }

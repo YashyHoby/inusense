@@ -28,7 +28,9 @@ static const int32_t recoding_size = recoding_byte_per_second * recoding_time;
 
 void audio_attention_cb(const ErrorAttentionParam *atprm);
 void initialize_audio();
-void rec_audio_mp3(const char* recFileName);
-void play_audio_mp3(const char* recFileName);
+void start_recorder(const char* recFileName);
+void start_player(const char* recFileName);
+void close_recorder(File myfile);
+void close_player(File myfile);
 
 #endif /* AUDIORECORDERPLAYER_H */

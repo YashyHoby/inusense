@@ -8,6 +8,6 @@
 
 // 共通変数の外部宣言
 extern SDClass theSD;
-extern File myFile;
+//extern File myFile;
 
 #endif /* GLOBALVARIABLES_H */

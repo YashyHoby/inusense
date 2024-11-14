@@ -6,9 +6,16 @@ app = Flask(__name__)
 
 # GETリクエストを処理するエンドポイント
 @app.route('/getData', methods=['GET'])
-def hello():
-    audio_file_path = 'path/to/your/audio.mp3'  # 音声ファイルの実際のパスに変更
-    return send_file(audio_file_path, mimetype='audio/mpeg')
+def send_audio_file():
+    audio_file_path = '../audio.mp3'
+    def generate():
+        with open(audio_file_path, 'rb') as f:
+            while True:
+                data = f.read(1500)
+                if not data:
+                    break
+                yield data
+    return Response(generate(), mimetype='audio/mpeg')
 
 # パケットを一時的に保存するリスト
 received_packets = []

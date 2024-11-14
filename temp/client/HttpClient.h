@@ -24,5 +24,6 @@ void initialize_http();
 void handleHttpPost(const char* filePath);
 void handleHttpGet(const char* saveFilePath);
 void downloadAudioFile(const char* saveFilePath);
+void close_recorder();
 
 #endif /* HTTPCLIENT_H */

@@ -49,17 +49,19 @@ void loop()
           break;
   }
   Serial.println("next");
-  play_audio_mp3(PLAY_FILE_NAME);
+  delay(20000);
+  start_player(RECEIVE_FILE_NAME);
   exit(1);
+  
 }
 
 
 void test_recAndPlay_mp3()
 {
-  rec_audio_mp3(RECORD_FILE_NAME);
+  start_recorder(RECORD_FILE_NAME);
   delay(10000);
   Serial.println("next!");
-  play_audio_mp3(PLAY_FILE_NAME);
+  start_player(PLAY_FILE_NAME);
   Serial.println("end!");
   delay(50000);
 }

@@ -3,4 +3,4 @@
 
 // 変数の定義
 SDClass theSD;
-File myFile;
+//File myFile;
