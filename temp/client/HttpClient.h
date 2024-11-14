@@ -23,7 +23,9 @@ void parse_httpresponse(char *message);
 void initialize_http();
 void handleHttpPost(const char* filePath);
 void handleHttpGet(const char* saveFilePath);
-void downloadAudioFile(const char* saveFilePath);
+void downloadAudioFile_timeout(const char* saveFilePath);
+void downloadAudioFile_byteRead(const char* saveFilePath);
+void downloadTextFile(const char* saveFileName);
 void close_recorder();
 
 #endif /* HTTPCLIENT_H */

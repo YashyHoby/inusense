@@ -5,7 +5,7 @@
 
 
 #define RECORD_FILE_NAME "record.mp3"
-#define RECEIVE_FILE_NAME "aa.mp3"
+#define RECEIVE_FILE_NAME "unchi.txt"
 #define PLAY_FILE_NAME "audio/Morning_10s.mp3"
 #define  CONSOLE_BAUDRATE  115200
 
@@ -42,7 +42,8 @@ void loop()
           handleHttpPost(RECORD_FILE_NAME);
           break;
       case GET:
-          downloadAudioFile(RECEIVE_FILE_NAME);
+          downloadAudioFile_timeout(RECEIVE_FILE_NAME);
+          //downloadTextFile(RECEIVE_FILE_NAME);
           //downloadAudioFile(RECEIVE_FILE_NAME);
           break;
       default:

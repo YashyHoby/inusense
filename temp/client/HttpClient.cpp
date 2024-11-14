@@ -100,8 +100,8 @@ void handleHttpGet(const char* saveFileName) {
     theCustomHttpGs.end();
 }
 
-
-void downloadAudioFile(const char* saveFileName) {
+// bool HttpGs2200::receive(uint64_t timeout) を利用
+void downloadAudioFile_timeout(const char* saveFileName) {
     const int RECEIVE_PACKET_SIZE = 10;
     uint8_t buffer[RECEIVE_PACKET_SIZE];
     int result = 0;
@@ -135,11 +135,11 @@ void downloadAudioFile(const char* saveFileName) {
 
 
     while (true){
-        result = theCustomHttpGs.receive(50000);
+        result = theCustomHttpGs.receive(5000);
 
         if (result) {
             theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
-            //myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
+            myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
             // バイナリで出力
             for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
                 Serial.print(buffer[i], HEX);
@@ -159,15 +159,19 @@ void downloadAudioFile(const char* saveFileName) {
     Serial.println("dddddd");
     myFile.close();
 }
-/*
-void downloadAudioFile(const char* saveFileName) {
+
+// int HttpGs2200::receive(uint8_t* data, int length) を利用
+void downloadAudioFile_byteRead(const char* saveFileName) {
     const int RECEIVE_PACKET_SIZE = 1500;
     uint8_t buffer[RECEIVE_PACKET_SIZE];
     int bytesRead;
     bool result;
 
-    // 既存のファイルがあれば削除
-    if (theSD.exists(saveFileName)) {
+    if (theSD.exists(saveFileName))
+    {
+        Serial.print("Remove existing file [");
+        Serial.print(saveFileName);
+        Serial.println("].");
         theSD.remove(saveFileName);
     }
 
@@ -208,4 +212,63 @@ void downloadAudioFile(const char* saveFileName) {
     // 終了処理
     theCustomHttpGs.end();
     myFile.close();
-}*/
+}
+
+
+//　テキストデータ受信
+void downloadTextFile(const char* saveFileName) {
+    const int RECEIVE_PACKET_SIZE = 10;
+    uint8_t buffer[RECEIVE_PACKET_SIZE];
+    int result = 0;
+
+    if (theSD.exists(saveFileName))
+    {
+        Serial.print("Remove existing file [");
+        Serial.print(saveFileName);
+        Serial.println("].");
+        theSD.remove(saveFileName);
+    }
+
+    // SDカードにファイルを作成
+    File myFile = theSD.open(saveFileName, FILE_WRITE);
+    if (!myFile) {
+        Serial.println("File open error");
+    }
+
+    theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
+    result = theCustomHttpGs.get(HTTP_GET_PATH);
+
+    if (!result) {
+        Serial.println("Failed to send GET request");
+        theCustomHttpGs.end();
+        myFile.close();
+        return;
+    }
+
+
+    Serial.println("HTTP GET request sent");
+
+
+    while (true){
+        result = theCustomHttpGs.receive(20000);
+        
+        if (result) {
+            theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
+            myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
+            // バイナリで出力
+            for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
+                Serial.print((char)buffer[i], HEX);
+                Serial.print(" ");
+            }
+            Serial.println("loading..");
+        } else {
+            Serial.println("End");
+            break;
+        }
+        
+    }
+
+
+    theCustomHttpGs.end();
+    myFile.close();
+}
