@@ -102,7 +102,7 @@ void handleHttpGet(const char* saveFileName) {
 
 
 void downloadAudioFile(const char* saveFileName) {
-    const uint16_t RECEIVE_PACKET_SIZE = 1500;
+    const uint16_t RECEIVE_PACKET_SIZE = 10;
     uint8_t buffer[RECEIVE_PACKET_SIZE];
     bool result = false;
 
@@ -138,12 +138,12 @@ void downloadAudioFile(const char* saveFileName) {
         result = theCustomHttpGs.receive(2000);  // タイムアウトを設定
         if (result) {
             theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
-            myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
-            /* // バイナリで出力
+            //myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
+            // バイナリで出力
             for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
                 Serial.print(buffer[i], HEX);
                 Serial.print(" ");
-            } */
+            }
             Serial.println("loading..");
             usleep(40000);
         }

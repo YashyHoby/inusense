@@ -98,22 +98,9 @@ void CustomHttpGs::sendFile(File file){
 }
 
 
-// int CustomHttpsGs::read_data(uint8_t* data, int length){
-
-  
-//     // ESCBuffer のサイズを取得
-//     int availableDataSize = sizeof(ESCBuffer); // getEscBufferSize は ESCBuffer のデータサイズを返す関数と仮定
-
-//     // コピーするサイズは、要求された長さと利用可能なデータサイズの小さい方
-//     int copySize = (length < availableDataSize) ? length : availableDataSize;
-
-//     // バッファをクリア
-//     memset(data, 0, length);
-
-//     // データをコピー
-//     memcpy(data, (ESCBuffer + 1), copySize);
-
-//     // 実際にコピーしたサイズを返す
-//     return copySize;
-
-// }
+int CustomHttpGs::readData(uint8_t* data, int length) {
+    int availableDataSize = getEscBufferSize(); // 受信バッファ内のデータサイズを取得
+    int copySize = min(length, availableDataSize);
+    memcpy(data, (ESCBuffer + 1), copySize);
+    return copySize;
+}

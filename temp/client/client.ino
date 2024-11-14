@@ -24,7 +24,7 @@ void setup()
     Serial.println("Insert SD card.");
   }
 
-  initialize_audio();
+  //initialize_audio();
 
   initialize_http();
 }
@@ -50,7 +50,7 @@ void loop()
   }
   Serial.println("next");
   delay(20000);
-  start_player(RECEIVE_FILE_NAME);
+  //start_player(RECEIVE_FILE_NAME);
   exit(1);
   
 }

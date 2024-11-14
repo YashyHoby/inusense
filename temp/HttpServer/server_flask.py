@@ -11,7 +11,8 @@ def send_audio_file():
     def generate():
         with open(audio_file_path, 'rb') as f:
             while True:
-                data = f.read(1500)
+                data = f.read(10)
+                print(data)
                 if not data:
                     break
                 yield data

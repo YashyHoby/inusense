@@ -19,6 +19,6 @@ class CustomHttpGs:public HttpGs2200
   public:
     CustomHttpGs(TelitWiFi* wifi):HttpGs2200(wifi){};
     void sendFile(File file);
-    //int readData(uint8_t* data, int length);
+    int readData(uint8_t* data, int length);
 };
 #endif
