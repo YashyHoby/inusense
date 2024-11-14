@@ -1,4 +1,4 @@
-from flask import Flask,request
+from flask import Flask,request,Response
 import os
 import time
 
@@ -7,7 +7,7 @@ app = Flask(__name__)
 # GETリクエストを処理するエンドポイント
 @app.route('/getData', methods=['GET'])
 def send_audio_file():
-    audio_file_path = '../audio.mp3'
+    audio_file_path = '../test.mp3'
     def generate():
         with open(audio_file_path, 'rb') as f:
             while True:
@@ -17,6 +17,19 @@ def send_audio_file():
                     break
                 yield data
     return Response(generate(), content_type='application/octet-stream')
+
+"""def send_text_file():
+    text_data = "This is a simple text string for testing purposes. Let's see if we can transfer it correctly."
+
+    def generate():
+        for i in range(0, len(text_data), 10):
+            data = text_data[i:i + 10].encode()
+            print(data)
+            yield data # 10バイトずつエンコードして送信
+
+    return Response(text_data, mimetype='text/plain')"""
+
+
 
 # パケットを一時的に保存するリスト
 received_packets = []
