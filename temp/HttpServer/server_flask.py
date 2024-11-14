@@ -16,7 +16,7 @@ def send_audio_file():
                 if not data:
                     break
                 yield data
-    return Response(generate(), mimetype='audio/mpeg')
+    return Response(generate(), content_type='application/octet-stream')
 
 # パケットを一時的に保存するリスト
 received_packets = []

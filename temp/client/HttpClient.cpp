@@ -52,7 +52,7 @@ void handleHttpPost(const char* filePath) {
     myFile.close();
 }
 
-/*
+
 void handleHttpGet(const char* saveFileName) {
     Serial.print("get audio from server");
     const uint16_t RECEIVE_PACKET_SIZE = 1500;
@@ -68,7 +68,7 @@ void handleHttpGet(const char* saveFileName) {
     }
 
     // SDカードにファイルを作成
-    myFile = theSD.open(saveFileName, FILE_WRITE);
+    File myFile = theSD.open(saveFileName, FILE_WRITE);
 
     if (!myFile) {
         Serial.println("File open error");
@@ -98,13 +98,13 @@ void handleHttpGet(const char* saveFileName) {
     Serial.println("dd");
     myFile.close();//
     theCustomHttpGs.end();
-}*/
+}
 
 
 void downloadAudioFile(const char* saveFileName) {
-    const uint16_t RECEIVE_PACKET_SIZE = 10;
+    const int RECEIVE_PACKET_SIZE = 10;
     uint8_t buffer[RECEIVE_PACKET_SIZE];
-    bool result = false;
+    int result = 0;
 
     if (theSD.exists(saveFileName))
     {
@@ -120,6 +120,7 @@ void downloadAudioFile(const char* saveFileName) {
         Serial.println("File open error");
     }
 
+    theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
     result = theCustomHttpGs.get(HTTP_GET_PATH);
 
     if (!result) {
@@ -132,10 +133,10 @@ void downloadAudioFile(const char* saveFileName) {
 
     Serial.println("HTTP GET request sent");
 
-    
 
-    do {
-        result = theCustomHttpGs.receive(2000);  // タイムアウトを設定
+    while (true){
+        result = theCustomHttpGs.receive(50000);
+
         if (result) {
             theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
             //myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
@@ -145,10 +146,12 @@ void downloadAudioFile(const char* saveFileName) {
                 Serial.print(" ");
             }
             Serial.println("loading..");
-            usleep(40000);
+        } else {
+            Serial.println("End");
+            break;
         }
         
-    } while (result);
+    }
 
 
     Serial.println("adaf");
@@ -156,3 +159,53 @@ void downloadAudioFile(const char* saveFileName) {
     Serial.println("dddddd");
     myFile.close();
 }
+/*
+void downloadAudioFile(const char* saveFileName) {
+    const int RECEIVE_PACKET_SIZE = 1500;
+    uint8_t buffer[RECEIVE_PACKET_SIZE];
+    int bytesRead;
+    bool result;
+
+    // 既存のファイルがあれば削除
+    if (theSD.exists(saveFileName)) {
+        theSD.remove(saveFileName);
+    }
+
+    // SDカードにファイルを作成
+    File myFile = theSD.open(saveFileName, FILE_WRITE);
+    if (!myFile) {
+        Serial.println("File open error");
+        return;
+    }
+
+    // HTTP GETリクエストの送信
+    result = theCustomHttpGs.get(HTTP_GET_PATH);
+    if (!result) {
+        Serial.println("Failed to send GET request");
+        theCustomHttpGs.end();
+        myFile.close();
+        return;
+    }
+    Serial.println("HTTP GET request sent");
+
+    // データの受信ループ
+    while (true) {
+        bytesRead = theCustomHttpGs.receive(buffer, RECEIVE_PACKET_SIZE);
+        if (bytesRead < 0) {
+            Serial.println("Error: Failed to receive data.");
+            break;
+        } else if (bytesRead == 0) {
+            // データの受信が完了した場合
+            Serial.println("All data received.");
+            break;
+        } else {
+            // 受信したデータをファイルに書き込み
+            myFile.write(buffer, bytesRead);
+        }
+        usleep(10000);
+    }
+
+    // 終了処理
+    theCustomHttpGs.end();
+    myFile.close();
+}*/
