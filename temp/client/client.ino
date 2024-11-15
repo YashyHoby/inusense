@@ -42,8 +42,8 @@ void loop()
           handleHttpPost(RECORD_FILE_NAME);
           break;
       case GET:
-          downloadAudioFile_timeout(RECEIVE_FILE_NAME);
-          //downloadTextFile(RECEIVE_FILE_NAME);
+          // downloadAudioFile_timeout(RECEIVE_FILE_NAME);
+          downloadTextFile(RECEIVE_FILE_NAME);
           //downloadAudioFile(RECEIVE_FILE_NAME);
           break;
       default:
