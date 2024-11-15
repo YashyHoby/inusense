@@ -181,7 +181,7 @@ void loop() {
     memset(hist, 0, frames*sizeof(float)); 
 
     // ラベル用テキスト
-    static const char label[2][8] = {"itteki", "tadaima"};
+    static const char label[3][8] = {"itteki", "tadaima", "nene"};
     // DNNRTの入力データ用バッファ
     DNNVariable input(frames/2*fft_samples/2);
     
