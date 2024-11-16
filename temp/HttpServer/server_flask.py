@@ -17,29 +17,72 @@ def send_audio_file():
                     break
                 yield data
     return Response(generate(), content_type='application/octet-stream')
+# def send_chunked_file():
+#     file_path = '../test.txt'  # または 'test.txt', 'test.mp3' など送信したいファイル
+#     if not os.path.exists(file_path):
+#         return Response("File not found", status=404)
 
-"""def send_text_file():
-    text_data = "This is a simple text string for testing purposes. Let's see if we can transfer it correctly."
+#     def generate():
+#         with open(file_path, 'rb') as f:
+#             while chunk := f.read(10):  # 10バイトずつ読み込む
+#                 yield chunk
+#         yield b'end'  # 終了マーカー
 
-    def generate():
-        for i in range(0, len(text_data), 10):
-            data = text_data[i:i + 10].encode()
-            print(data)
-            yield data # 10バイトずつエンコードして送信
-
-    return Response(text_data, mimetype='text/plain')"""
-
+#     return Response(generate(), content_type='application/octet-stream')
+# def send_audio_file():
+#     audio_file_path = '../test.mp3'
+#     with open(audio_file_path, 'rb') as f:
+#         while True:
+#             data = f.read(10)
+#             print(data)
+#             if not data:
+#                 break
+#             yield data
+#     return Response(data, content_type='application/octet-stream')
+# def send_audio_file():
+#     audio_file_path = 'random_bytes.bin'
+#     def generate():
+#         with open(audio_file_path, 'rb') as f:
+#             while True:
+#                 data = f.read(10)
+#                 print(data)
+#                 if not data:
+#                     break
+#                 yield data
+#     return Response(generate(), content_type='application/octet-stream')
+# def send_binary_file():
+#     binary_data = b'\x52\x49\x46\x46\x24\x08\x00\x00\x57\x41\x56\x45'
+#     def generate():
+#         for i in range(0, len(binary_data), 10):
+#             chunk = binary_data[i:i + 10]
+#             yield chunk.hex()  # 16進文字列にエンコードして送信
+#     return Response(generate(), content_type='application/octet-stream')
 
 
 # パケットを一時的に保存するリスト
 received_packets = []
 
-def body_to_bin(data_b:bytes):
-    data_s = data_b.decode()#bin to ascii文字列(hex表記).ex,35323439...→"5249..."
-    print(f"decoded:{data_s}")
-    chunks = [data_s[i:i+2] for i in range(0, len(data_s), 2)]# ascii文字列(hex表記)を2文字ごとに区切る．ex,"5249..."→"52","49",...
-    data_bin_list = [int(s,16).to_bytes((int(s,16).bit_length() + 7) // 8, byteorder='big') for s in chunks]# ascii文字列(hex表記)をintに変換してbytes型に変換.ex,"52","49",...→52,49,...
-    data_bin_row = b''.join([b if b != b'' else b'\x00' for b in data_bin_list])# バイナリデータ列にする．0x00が空バイトとしてエンコードされているので修正.ex,52,49,...→5249...
+def body_to_bin(data_b: bytes):
+    data_s = data_b.decode()  # bin to ASCII文字列(hex表記)
+    print(f"decoded: {data_s}")
+    
+    if len(data_s) % 2 != 0:
+        data_s = '0' + data_s  # 奇数長の場合、先頭に0を補完
+    
+    chunks = [data_s[i:i+2] for i in range(0, len(data_s), 2)]  # 2文字ごとに区切る
+    print(f"chunks: {chunks}")
+    
+    data_bin_list = []
+    for s in chunks:
+        try:
+            data_bin_list.append(
+                int(s, 16).to_bytes((int(s, 16).bit_length() + 7) // 8, byteorder='big')
+            )
+        except ValueError:
+            print(f"Invalid chunk: {s}")
+            data_bin_list.append(b'\x00')  # 無効なデータを0x00に置き換える
+    
+    data_bin_row = b''.join(data_bin_list)
     return data_bin_row
 
 
@@ -90,4 +133,4 @@ def receive_data():
 
 if __name__ == '__main__':
     # サーバーを0.0.0.0にバインドしてすべてのIPからの接続を許可
-    app.run(host='0.0.0.0', port=3000)
+    app.run(debug=True, host='0.0.0.0', port=3000)
