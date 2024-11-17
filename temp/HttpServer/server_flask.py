@@ -1,9 +1,26 @@
-from flask import Flask,request,Response
+from flask import Flask,request,Response, abort
 import os
 import time
+from linebot.v3 import WebhookHandler
+from linebot.v3.exceptions import InvalidSignatureError
+from linebot.v3.messaging import (
+	ApiClient, Configuration, MessagingApi,
+	ReplyMessageRequest, PushMessageRequest,
+	TextMessage, PostbackAction
+)
+from linebot.v3.webhooks import (
+	FollowEvent, MessageEvent, PostbackEvent, TextMessageContent
+)
+from dotenv import load_dotenv
+load_dotenv()
+
+CHANNEL_ACCESS_TOKEN = os.environ["CHANNEL_ACCESS_TOKEN"]
+CHANNEL_SECRET = os.environ["CHANNEL_SECRET"]
 
 app = Flask(__name__)
 
+configuration = Configuration(access_token=CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(CHANNEL_SECRET)
 # GETリクエストを処理するエンドポイント
 @app.route('/getData', methods=['GET'])
 def send_audio_file():
@@ -90,6 +107,37 @@ isReceiving = False
 start_t = time.time()
 # POSTリクエストを処理するエンドポイント
 @app.route('/postData', methods=['POST'])
+@app.route("/callback", methods=['POST'])
+def callback():
+	# get X-Line-Signature header value
+	signature = request.headers['X-Line-Signature']
+
+	# get request body as text
+	body = request.get_data(as_text=True)
+	app.logger.info("Request body: " + body)
+
+	# handle webhook body
+	try:
+		handler.handle(body, signature)
+	except InvalidSignatureError:
+		app.logger.info("Invalid signature. Please check your channel access token/channel secret.")
+		abort(400)
+
+	return 'OK'
+
+@handler.add(FollowEvent)
+def handle_follow(event):
+	## APIインスタンス化
+	with ApiClient(configuration) as api_client:
+		line_bot_api = MessagingApi(api_client)
+
+	## 返信
+	line_bot_api.reply_message(ReplyMessageRequest(
+		replyToken=event.reply_token,
+		messages=[TextMessage(text='Thank You!')]
+	))
+     
+
 def receive_data():
     global isReceiving
     global start_t
@@ -130,6 +178,7 @@ def receive_data():
     # クライアントにレスポンスを返す
     # return f"Received your data: {data_b}", 200
     return f"", 200
+
 
 if __name__ == '__main__':
     # サーバーを0.0.0.0にバインドしてすべてのIPからの接続を許可
