@@ -38,7 +38,7 @@ def generate_reply():
     try:
         text = m()  # 音声の処理やChatGPTへのリクエストを実行する関数
         f = open('answer.txt', 'w')
-        f.write(text)
+        f.write(text+"./r")
         f.close()
         return jsonify({"message": "処理が成功しました"})  # 成功レスポンスを返す
     except Exception as e:
@@ -117,6 +117,7 @@ def receive_data():
         data_bin_row = body_to_bin(data_b)#変換
         received_packets.append(data_bin_row)
         print(data_bin_row)
+    
 
     # クライアントにレスポンスを返す
     # return f"Received your data: {data_b}", 200

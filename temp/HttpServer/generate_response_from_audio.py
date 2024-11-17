@@ -80,33 +80,33 @@ def record_audio():
         wf.writeframes(b''.join(frames))
 
 # 音声からテキスト生成
-def transcribe_speech():
-    try:
-        with open(QUESTION_AUDIO, 'rb') as f:
-            content = f.read()
+# def transcribe_speech(audio):
+#     try:
+#         with open(QUESTION_AUDIO, 'rb') as f:
+#             content = f.read()
         
-        audio = speech.RecognitionAudio(content=content)
-        config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=RATE,
-            language_code='ja-JP'
-        )
-        response = client.recognize(config=config, audio=audio)
+#         audio = speech.RecognitionAudio(content=content)
+#         config = speech.RecognitionConfig(
+#             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+#             sample_rate_hertz=RATE,
+#             language_code='ja-JP'
+#         )
+#         response = client.recognize(config=config, audio=audio)
 
-        text = ""
-        for result in response.results:
-            text += result.alternatives[0].transcript
+#         text = ""
+#         for result in response.results:
+#             text += result.alternatives[0].transcript
 
-        return text
+#         return text
 
-    except FileNotFoundError:
-        print("Audio file not found.")
-        return None
+#     except FileNotFoundError:
+#         print("Audio file not found.")
+#         return None
     
-def transcribe_answer_speech():
+def transcribe_speech(audio_input):
     try:
         # `response.mp3` を WAV に変換し、サンプルレートを統一
-        audio = pydub.AudioSegment.from_mp3(RESPONSE_AUDIO)
+        audio = pydub.AudioSegment.from_mp3(audio_input)
         audio = audio.set_frame_rate(RATE).set_channels(1)
         temp_wav = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
         audio.export(temp_wav.name, format="wav")
@@ -215,30 +215,30 @@ def play_audio():
     playsound(RESPONSE_AUDIO)
 
 # 動作テスト（録音・生成・再生）
-def test():
-    while True:
-        command = input("Enter 'r' to start recording, 'c' to check microphone, 'q' to quit: ")
-        if command.lower() == 'q':
-            print("Exiting...")
-            break
+# def test():
+#     while True:
+#         command = input("Enter 'r' to start recording, 'c' to check microphone, 'q' to quit: ")
+#         if command.lower() == 'q':
+#             print("Exiting...")
+#             break
 
-        if command.lower() == 'r':
-            record_audio()
-            text = transcribe_speech()
-            print(text)
-            answer = receive_GPT_response(text)
-            create_speech_mp3(answer)
-            print(answer)
-            play_audio()
+#         if command.lower() == 'r':
+#             record_audio()
+#             text = transcribe_speech()
+#             print(text)
+#             answer = receive_GPT_response(text)
+#             create_speech_mp3(answer)
+#             print(answer)
+#             play_audio()
             
-            time.sleep(1)  # 録音後、再度待機状態に戻るための一時停止
+#             time.sleep(1)  # 録音後、再度待機状態に戻るための一時停止
 
 # 録音音声（QUESTION_AUDIO）を読み込み、返答音声（RESPONSE_AUDIO）を作成
 def m():
-    text = transcribe_speech()
+    text = transcribe_speech(QUESTION_AUDIO)
     answer = receive_GPT_response(text)
     create_speech_mp3(answer)
-    return transcribe_answer_speech()
+    return transcribe_speech(RESPONSE_AUDIO)
 
 #main()
 # test()
