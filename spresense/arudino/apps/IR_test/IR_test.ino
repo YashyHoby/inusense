@@ -28,14 +28,14 @@ void loop() {
   */
 
   int analogValue = analogRead(A0);
-  float voltage = analogValue * (5.0/1024.0);
-  Serial.print(voltage);
+  //float voltage = analogValue * (5.0/1024.0);
+  Serial.print(analogValue);
   Serial.println("");
-  if (voltage >= 3.0){
-    digitalWrite(LED0, HIGH);
-  }else{
-    digitalWrite(LED0, LOW);
-  }
+  // if (voltage >= 3.0){
+  //   digitalWrite(LED0, HIGH);
+  // }else{
+  //   digitalWrite(LED0, LOW);
+  // }
 
   delay(200);
 }
