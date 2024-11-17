@@ -171,6 +171,7 @@ void interaction_mode(){
   // 録音データ送信
 
   // テキスト受信
+  
   char answer = "";
   speakText(answer);
 
