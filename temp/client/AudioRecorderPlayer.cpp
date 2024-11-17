@@ -1,6 +1,7 @@
 #include "AudioRecorderPlayer.h"
 
-AudioClass *theAudio;
+//AudioClass *theAudio;
+
 bool ErrEnd = false;
 
 /**
@@ -20,12 +21,12 @@ void audio_attention_cb(const ErrorAttentionParam *atprm)
 
 void initialize_audio()
 {
-  theAudio = AudioClass::getInstance();
   theAudio->begin(audio_attention_cb);
   theAudio->setRenderingClockMode(AS_CLKMODE_NORMAL);
   Serial.println("Initialization Audio Library");
   //theAudio->setReadyMode();
 }
+
 
 void start_recorder(const char* recFileName)
 {
@@ -48,9 +49,9 @@ void start_recorder(const char* recFileName)
     theSD.remove(recFileName);
   }
 
-  File myFile = theSD.open(recFileName, FILE_WRITE);
+  File recFile = theSD.open(recFileName, FILE_WRITE);
   /* Verify file open */
-  if (!myFile)
+  if (!recFile)
   {
     Serial.println("File open error");
     return;
@@ -70,12 +71,12 @@ void start_recorder(const char* recFileName)
     {
       theAudio->stopRecorder();
       sleep(1);
-      err = theAudio->readFrames(myFile);
+      err = theAudio->readFrames(recFile);
       break;
     }
 
     /* Read frames to record in file */
-    err = theAudio->readFrames(myFile);
+    err = theAudio->readFrames(recFile);
     if (err != AUDIOLIB_ECODE_OK || ErrEnd)
     {
       Serial.print("File End! =");
@@ -86,8 +87,8 @@ void start_recorder(const char* recFileName)
     usleep(10000);
   }
 
-  theAudio->closeOutputFile(myFile);
-  myFile.close();
+  theAudio->closeOutputFile(recFile);
+  recFile.close();
   theAudio->setReadyMode();
   Serial.println("End Recording");
 }

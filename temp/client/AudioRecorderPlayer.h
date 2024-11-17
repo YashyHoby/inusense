@@ -2,12 +2,12 @@
 #define AUDIORECORDERPLAYER_H
 
 #include "GlobalVariables.h"
-#include <Audio.h>
+//#include <Audio.h>
 
 
 #define audioLevel -160
 
-extern AudioClass *theAudio;
+//extern AudioClass *theAudio;
 extern bool ErrEnd;
 
 
