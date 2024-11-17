@@ -5,8 +5,8 @@
 #include "TriggerWordRecognition.h"
 
 
-#define RECORD_FILE_NAME "record.mp3"
-#define RECEIVE_FILE_NAME "unchi.txt"
+#define RECORD_FILE_NAME "question.mp3"
+#define RECEIVE_FILE_NAME "answer.txt"
 #define PLAY_FILE_NAME "audio/Morning_10s.mp3"
 #define  CONSOLE_BAUDRATE  115200
 
@@ -145,6 +145,7 @@ void alert_mode(){
       Serial.println("line send");
 
       // line通知
+      LINE_req();
 
       speakText("e.\r");
       delay(1000); 
@@ -169,10 +170,12 @@ void interaction_mode(){
   delay(5000);
 
   // 録音データ送信
+  handleHttpPost(RECORD_FILE_NAME);
 
   // テキスト受信
-  
+  downloadTextFile(RECEIVE_FILE_NAME);
   char answer = "";
+  
   speakText(answer);
 
   Serial.println("interaction mode end");

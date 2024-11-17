@@ -160,6 +160,32 @@ void downloadAudioFile_timeout(const char* saveFileName) {
     myFile.close();
 }
 
+// bool HttpGs2200::receive(uint64_t timeout) を利用
+void LINE_req() {
+    const int RECEIVE_PACKET_SIZE = 10;
+    uint8_t buffer[RECEIVE_PACKET_SIZE];
+    int result = 0;
+
+    theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
+    result = theCustomHttpGs.get(HTTP_LINE_PATH);
+
+    if (!result) {
+        Serial.println("Failed to send GET request");
+        theCustomHttpGs.end();
+        //myFile.close();
+        return;
+    }
+
+
+    Serial.println("HTTP GET request sent");
+
+    Serial.println("adaf");
+    theCustomHttpGs.end();
+    Serial.println("dddddd");
+}
+
+
+
 // int HttpGs2200::receive(uint8_t* data, int length) を利用
 void downloadAudioFile_byteRead(const char* saveFileName) {
     const int RECEIVE_PACKET_SIZE = 1500;

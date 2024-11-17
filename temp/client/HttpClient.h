@@ -27,5 +27,6 @@ void downloadAudioFile_timeout(const char* saveFilePath);
 void downloadAudioFile_byteRead(const char* saveFilePath);
 void downloadTextFile(const char* saveFileName);
 void close_recorder();
+void LINE_req();
 
 #endif /* HTTPCLIENT_H */

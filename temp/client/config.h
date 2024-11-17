@@ -4,11 +4,12 @@
 /*-------------------------------------------------------------------------*
  * Configration
  *-------------------------------------------------------------------------*/
-#define  AP_SSID        "Unchi"
-#define  PASSPHRASE     "ahoaho13"
+#define  AP_SSID        "TP-Link_490F"
+#define  PASSPHRASE     "02694344"
 
 #define  HTTP_SRVR_IP  "192.168.166.66"
 #define  HTTP_PORT     "3000"
+#define  HTTP_GET_PATH "/getData"
 #define  HTTP_GET_PATH "/getData"
 #define  HTTP_POST_PATH "/postData"
 
