@@ -38,11 +38,10 @@ void setup()
   initialization_TWR();
   //initialize_http();
 
-  Serial2.print("sextutoaxtupukanryo-.\r");
   delay(2000);
   httpStat = POST;
   Serial.println("Setup complete");
-  speakText("sextutoaxtupukanryo-");
+  speakText("sextutoaxtupukanryo-.\r");
 }
 
 void loop()
@@ -84,7 +83,7 @@ void test_recAndPlay_mp3(){
 void normal_mode(){
   Serial.println("normal mode");
   wait_person_detection();
-  speakText("ohayo-");
+  speakText("ohayo-.\r");
   
   unsigned long startTime = millis();
   while(true){
@@ -92,14 +91,18 @@ void normal_mode(){
     // トリガー分岐
     if(triggerWord_index == 0){
       // 行ってきます
+      Serial.println("ittekimasu");
       alert_mode();
       startTime = millis(); // リセット
     }else if(triggerWord_index == 1){
       // ただいま
-      speakText("waai");
+      Serial.println("tadaima");
+      speakText("waai.\r");
       startTime = millis(); // リセット
+
     }else if(triggerWord_index == 2){
       // ねえねえ
+      Serial.println("nene");
       interaction_mode();
       startTime = millis(); // リセット
     }
@@ -112,39 +115,56 @@ void normal_mode(){
     // 経過時間
     unsigned long elapsedTime = millis() - startTime;
     if(elapsedTime > 10000){
+      Serial.println("10 seconds have passed");
       break;
     }
   }
   speakText("matane");
   delay(5000);
+
 }
 
 // 警戒モード
 void alert_mode(){
-  Serial.println("alert mode");
+  Serial.println("alert mode start");
   // 人が去るまで待機させたい
   // delay(20000); 
-  speakText("ixtuteraxtusyai");
+  speakText("ixtuteraxtusyai.\r");
   wait_person_detection();
 
+  unsigned long startTime = millis();
   while(true){
-    speakText("okaeri-");
+    speakText("okaeri-.\r");
     int triggerWord_index = triggerWordRecognition();
     // トリガー分岐
     if(triggerWord_index == 1){
       // ただいま
+      Serial.println("unlock alert");
+      break;
     }else{
+      Serial.println("line send");
+
       // line通知
-      Serial2.print("e.\r");
+
+      speakText("e.\r");
       delay(1000); 
     }
+
+    // 経過時間
+    unsigned long elapsedTime = millis() - startTime;
+    if(elapsedTime > 10000){
+      Serial.println("10 seconds have passed");
+      break;
+    }
   }
+
+  Serial.println("alart mode end");
 }
 
 // 会話モード
 void interaction_mode(){
-  Serial.println("interaction mode");
-  speakText("naani");
+  Serial.println("interaction mode start");
+  speakText("naani.\r");
   start_recorder(RECORD_FILE_NAME);
   delay(5000);
 
@@ -153,33 +173,37 @@ void interaction_mode(){
   // テキスト受信
   char answer = "";
   speakText(answer);
+
+  Serial.println("interaction mode end");
 }
 
+
+// レディー状態検知と末尾追加をしたかった
 void speakText(char* text){
-  unsigned long timeout = millis() + 5000; // 5秒のタイムアウトを設定
-  while (true) {
-    if (millis() > timeout) {
-      //Serial.println("Timeout waiting for LSI to be ready.");
-      return; // タイムアウト時に終了
-    }
+  // unsigned long timeoutStart  = millis(); // 5秒のタイムアウトを設定
+  // while (true) {
+  //   if (millis() - timeoutStart > 5000) {
+  //     //Serial.println("Timeout waiting for LSI to be ready.");
+  //     return; // タイムアウト時に終了
+  //   }
 
-    if (Serial2.available()) {
-      String receivedData = Serial2.readStringUntil('\n'); // 改行まで読み取る
-      receivedData.trim(); // 空白や改行を削除
-      if (receivedData == ">") {
-        Serial.println("Sound end & Aquestalk LSI ready");
-        break;
-      } else if (receivedData == "*") {
-        Serial.println("ATP3011F4 busy");
-      } else {
-        Serial.print("Unknown data received via UART: ");
-        Serial.println(receivedData);
-      }
-    }
-    delay(10); // 過度のCPU負荷を避けるため少し待機
-  }
+  //   if (Serial2.available()) {
+  //     String receivedData = Serial2.readStringUntil('\n'); // 改行まで読み取る
+  //     receivedData.trim(); // 空白や改行を削除
+  //     if (receivedData == ">") {
+  //       Serial.println("Sound end & Aquestalk LSI ready");
+  //       break;
+  //     } else if (receivedData == "*") {
+  //       Serial.println("ATP3011F4 busy");
+  //     } else {
+  //       Serial.print("Unknown data received via UART: ");
+  //       Serial.println(receivedData);
+  //     }
+  //   }
+  //   delay(10); // 過度のCPU負荷を避けるため少し待機
+  // }
 
-  String message = String(text) + '.\r';
-  Serial2.print(message); // テキストを送信
+  //String message = String(text) + '.\r';
+  Serial2.print(text); // テキストを送信
   //Serial2.print('.\r'); // 必要に応じてCRを追加
 }
