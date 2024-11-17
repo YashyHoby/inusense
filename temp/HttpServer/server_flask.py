@@ -23,29 +23,29 @@ configuration = Configuration(access_token=CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
 # GETリクエストを処理するエンドポイント
 @app.route('/getData', methods=['GET'])
-def send_audio_file():
-    audio_file_path = '../test.mp3'
-    def generate():
-        with open(audio_file_path, 'rb') as f:
-            while True:
-                data = f.read(10)
-                print(data)
-                if not data:
-                    break
-                yield data
-    return Response(generate(), content_type='application/octet-stream')
-# def send_chunked_file():
-#     file_path = '../test.txt'  # または 'test.txt', 'test.mp3' など送信したいファイル
-#     if not os.path.exists(file_path):
-#         return Response("File not found", status=404)
-
+# def send_audio_file():
+#     audio_file_path = '../test.mp3'
 #     def generate():
-#         with open(file_path, 'rb') as f:
-#             while chunk := f.read(10):  # 10バイトずつ読み込む
-#                 yield chunk
-#         yield b'end'  # 終了マーカー
-
+#         with open(audio_file_path, 'rb') as f:
+#             while True:
+#                 data = f.read(10)
+#                 print(data)
+#                 if not data:
+#                     break
+#                 yield data
 #     return Response(generate(), content_type='application/octet-stream')
+def send_chunked_file():
+    file_path = '../test.txt'  # または 'test.txt', 'test.mp3' など送信したいファイル
+    if not os.path.exists(file_path):
+        return Response("File not found", status=404)
+
+    def generate():
+        with open(file_path, 'rb') as f:
+            while chunk := f.read(10):  # 10バイトずつ読み込む
+                yield chunk
+        yield b'end'  # 終了マーカー
+
+    return Response(generate(), content_type='application/octet-stream')
 # def send_audio_file():
 #     audio_file_path = '../test.mp3'
 #     with open(audio_file_path, 'rb') as f:
