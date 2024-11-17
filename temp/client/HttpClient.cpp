@@ -5,6 +5,8 @@ TWIFI_Params gsparams;
 CustomHttpGs theCustomHttpGs(&gs2200);
 HTTPGS2200_HostParams hostParams;
 DEMO_STATUS_E httpStat;
+const uint16_t RECEIVE_PACKET_SIZE = 1500;
+uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
 
 void parse_httpresponse(char *message) {
     char *p;
@@ -142,7 +144,7 @@ void downloadAudioFile_timeout(const char* saveFileName) {
             myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
             // バイナリで出力
             for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
-                Serial.print(buffer[i], HEX);
+                Serial.print(buffer[i]);
                 Serial.print(" ");
             }
             Serial.println("loading..");
@@ -217,10 +219,9 @@ void downloadAudioFile_byteRead(const char* saveFileName) {
 
 //　テキストデータ受信
 void downloadTextFile(const char* saveFileName) {
-    const int RECEIVE_PACKET_SIZE = 10;
+    const int RECEIVE_PACKET_SIZE = 40;
     uint8_t buffer[RECEIVE_PACKET_SIZE];
-    int result = 0;
-
+    bool result = false;
     if (theSD.exists(saveFileName))
     {
         Serial.print("Remove existing file [");
@@ -234,39 +235,67 @@ void downloadTextFile(const char* saveFileName) {
     if (!myFile) {
         Serial.println("File open error");
     }
-
     theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
     result = theCustomHttpGs.get(HTTP_GET_PATH);
+    Serial.println("bruh bruh");
+    Serial.println(result);
+    Serial.println("socket has been opened");
 
-    if (!result) {
-        Serial.println("Failed to send GET request");
-        theCustomHttpGs.end();
-        myFile.close();
-        return;
+    Serial.println("Attempting to read data...");
+    theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+    for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
+        myFile.write(Receive_Data[i]);
     }
+    Serial.println("End of data.");
+
 
 
     Serial.println("HTTP GET request sent");
 
+ 			// do {
+			// 	result =theCustomHttpGs.receive(2000);
+			// 	if (result) {
+			// 		theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
 
-    while (true){
-        result = theCustomHttpGs.receive(20000);
+      //     myFile.write(Receive_Data, RECEIVE_PACKET_SIZE); 
+
+      //     ConsolePrintf("%s", (char *)(Receive_Data));
+			// 	} else {
+			// 		// AT+HTTPSEND command is done
+			// 		ConsolePrintf( "\r\n");
+			// 	}
+			// } while (result);
+
+      result = theCustomHttpGs.end();
+      Serial.println("Bruhh");
+
+      delay(1000);
+			httpStat = GET;
+    
+    // while (true){
+    //   Serial.println("i wanna know why");
+    //     if (dataSize > 0) {
+    //       myFile.write(buffer, dataSize); // 実際に受信したサイズだけ書き込む
+    //       Serial.println("damn");
+    //     }
+    //     result = theCustomHttpGs.receive(200000);
+    //     Serial.println(result);
+    //     if (result) {
+    //       Serial.println("crying");
+    //         theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
+    //         Serial.println(int(uint(buffer)));
+    //         myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
+    //         // バイナリで出力
+    //         for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
+    //             Serial.print((char)buffer[i], BIN);
+    //         }
+    //         Serial.println("loading..");
+    //     } else {
+    //         Serial.println("End");
+    //         break;
+    //     }
         
-        if (result) {
-            theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
-            myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
-            // バイナリで出力
-            for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
-                Serial.print((char)buffer[i], HEX);
-                Serial.print(" ");
-            }
-            Serial.println("loading..");
-        } else {
-            Serial.println("End");
-            break;
-        }
-        
-    }
+    // }
 
 
     theCustomHttpGs.end();
