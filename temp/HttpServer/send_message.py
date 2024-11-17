@@ -1,18 +1,24 @@
 import requests
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-LINE_API_TOKEN_PATH = "../../../config/line/line_access_token.txt"
-USER_ID = 'U10f6038da3853cc2d4c6308f21806703'
+LINE_API_TOKEN_PATH = os.environ["CHANNEL_ACCESS_TOKEN"]
+CHANNEL_SECRET = os.environ["CHANNEL_SECRET"]
+
+# LINE_API_TOKEN_PATH = "../../../config/line/line_access_token.txt"
+USER_ID = os.environ["USER_ID"]
 
 # line apiのアクセストークン取得
-def read_keyFile():
-    try:
-        with open(LINE_API_TOKEN_PATH, 'r', encoding='utf-8') as file:
-            key = file.readline().strip()
-        return key
-    except FileNotFoundError:
-        return "ファイルが見つかりません。"
-    except Exception as e:
-        return f"エラーが発生しました: {e}"
+# def read_keyFile():
+#     try:
+#         with open(LINE_API_TOKEN_PATH, 'r', encoding='utf-8') as file:
+#             key = file.readline().strip()
+#         return key
+#     except FileNotFoundError:
+#         return "ファイルが見つかりません。"
+#     except Exception as e:
+#         return f"エラーが発生しました: {e}"
 
 # アクセストークンが有効か確認
 def check_access_token(access_token):
@@ -81,10 +87,11 @@ def send_message_to_user(access_token, user_id, message):
         print(f"エラー: {response.status_code}, {response.text}")
 
 def main():
-    access_token = read_keyFile()
-    #check_access_token(access_token)
-    #send_message(access_token, "hello")
-    send_message_to_user(access_token, USER_ID, "wa")
+    # access_token = read_keyFile()
+    print('a')
+    check_access_token(LINE_API_TOKEN_PATH)
+    # send_message(LINE_API_TOKEN_PATH, "hello")
+    send_message_to_user(LINE_API_TOKEN_PATH, USER_ID, "wa")
 
 
-#main()
+# main()
