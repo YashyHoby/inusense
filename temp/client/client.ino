@@ -90,12 +90,19 @@ void normal_mode(){
   while(true){
     triggerWord_index = triggerWordRecognition();
     // トリガー分岐
+    if(triggerWord_index == 0){
+
+    }else if(triggerWord_index == 1){
+
+    }else if(triggerWord_index == 2){
+      
+    }
   }
 }
 
 void alert_mode(){
   wait_person_detection();
-  Serial2.print("ixtutekimasu.\r");
+  Serial2.print("okaeri-.\r");
 }
 
 void interaction_mode(){
