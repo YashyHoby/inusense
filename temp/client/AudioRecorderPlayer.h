@@ -11,20 +11,20 @@
 extern bool ErrEnd;
 
 
-// /* Recording time[second] */
-// static const int32_t recoding_time = 4;
+/* Recording time[second] */
+static const int32_t recoding_time = 4;
 
-// /* Recording bit rate
-//  * Set in bps.
-//  * Note: 96kbps fixed
-//  */
-// static const int32_t recoding_bitrate = 96000;
+/* Recording bit rate
+ * Set in bps.
+ * Note: 96kbps fixed
+ */
+static const int32_t recoding_bitrate = 96000;
 
-// /* Bytes per second */
-// static const int32_t recoding_byte_per_second = (recoding_bitrate / 8);
+/* Bytes per second */
+static const int32_t recoding_byte_per_second = (recoding_bitrate / 8);
 
-// /* Total recording size */
-// //static const int32_t recoding_size = recoding_byte_per_second * recoding_time;
+/* Total recording size */
+static const int32_t recoding_size = recoding_byte_per_second * recoding_time;
 
 void audio_attention_cb(const ErrorAttentionParam *atprm);
 void initialize_audio();

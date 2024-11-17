@@ -79,17 +79,15 @@ int triggerWordRecognition(){
   int label_index = -1;   // 認識結果
   int err;
   
-
-  Serial.println("Start Recorder");                                 
+                        
   theAudio->startRecorder(); // 録音開始
-  
   // index出力に応じて、再度録音するようにする必要あり
   while(1){
     /* buffer_sizeで要求されたデータをbuffに格納する */
     /* 読み込みできたデータ量は read_size に設定される */
     while (1) {
-      bool isUnchi;
       err = theAudio->readFrames(buff, buffer_size, &read_size);  
+
       if (err != AUDIOLIB_ECODE_OK && 
           err != AUDIOLIB_ECODE_INSUFFICIENT_BUFFER_AREA) {
         Serial.println("here Error err = " + String(err));
@@ -199,6 +197,7 @@ int triggerWordRecognition(){
       theAudio->stopRecorder(); // 認識処理のためにレコーダーを一時停止
 
       /* 認識処理 */
+      const char label[3][8] = {"itteki", "tadaima", "nene"};
       dnnrt.inputVariable(input, 0);
       dnnrt.forward();
       DNNVariable output = dnnrt.outputVariable(0);
@@ -206,13 +205,17 @@ int triggerWordRecognition(){
       label_index = output.maxIndex();
       value = output[label_index];
 
+      Serial.println(String(output[0]));
+      Serial.println(String(output[1]));
+      Serial.println(String(output[2]));
+      Serial.println(String(label[label_index])  
+          + " : " + String(value));
       theAudio->startRecorder(); // レコーダーを再開
     }
 
     if(label_index != -1){
       break;
     }else{
-      Serial.println("no");
     }
   }
   free(buff);
@@ -221,11 +224,11 @@ int triggerWordRecognition(){
   //dnnrt.end();
   //FFT.end();
   Serial.println(label_index);
-  Serial.println("end of runAudioAI()");
   return label_index;
 }
 
-
+void soundRecognition(){
+}
 
 void averageSmooth(float* dst) {
   const int array_size = 4;

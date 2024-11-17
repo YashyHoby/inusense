@@ -14,6 +14,7 @@ extern DNNRT dnnrt;
 void averageSmooth(float* dst);
 int triggerWordRecognition();
 void initialization_TWR();
+void soundRecognition();
 
 #endif //TRIGGERWOEDRECOGNITION
 

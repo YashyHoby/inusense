@@ -28,70 +28,70 @@ void initialize_audio()
 }
 
 
-// void start_recorder(const char* recFileName)
-// {
-//   /* Select input device as analog microphone */
-//   theAudio->setRecorderMode(AS_SETRECDR_STS_INPUTDEVICE_MIC);
+void start_recorder(const char* recFileName)
+{
+  /* Select input device as analog microphone */
+  theAudio->setRecorderMode(AS_SETRECDR_STS_INPUTDEVICE_MIC);
   
-//   /*
-//    * Initialize filetype to stereo mp3 with 48 Kb/s sampling rate
-//    * Search for MP3 codec in "/mnt/sd0/BIN" directory
-//    */
-//   theAudio->initRecorder(AS_CODECTYPE_MP3, "/mnt/sd0/BIN", AS_SAMPLINGRATE_48000, AS_CHANNEL_STEREO);
-//   Serial.println("Init Recorder!");
+  /*
+   * Initialize filetype to stereo mp3 with 48 Kb/s sampling rate
+   * Search for MP3 codec in "/mnt/sd0/BIN" directory
+   */
+  theAudio->initRecorder(AS_CODECTYPE_MP3, "/mnt/sd0/BIN", AS_SAMPLINGRATE_48000, AS_CHANNEL_STEREO);
+  Serial.println("Init Recorder!");
 
-//   /* Open file for data write on SD card */
-//   if (theSD.exists(recFileName))
-//   {
-//     Serial.print("Remove existing file [");
-//     Serial.print(recFileName);
-//     Serial.println("].");
-//     theSD.remove(recFileName);
-//   }
+  /* Open file for data write on SD card */
+  if (theSD.exists(recFileName))
+  {
+    Serial.print("Remove existing file [");
+    Serial.print(recFileName);
+    Serial.println("].");
+    theSD.remove(recFileName);
+  }
 
-//   File myFile = theSD.open(recFileName, FILE_WRITE);
-//   /* Verify file open */
-//   if (!myFile)
-//   {
-//     Serial.println("File open error");
-//     return;
-//   }
+  File recFile = theSD.open(recFileName, FILE_WRITE);
+  /* Verify file open */
+  if (!recFile)
+  {
+    Serial.println("File open error");
+    return;
+  }
 
-//   Serial.print("Open! [");
-//   Serial.print(recFileName);
-//   Serial.println("]");
-//   theAudio->startRecorder();
-//   Serial.println("Recording Start!");
+  Serial.print("Open! [");
+  Serial.print(recFileName);
+  Serial.println("]");
+  theAudio->startRecorder();
+  Serial.println("Recording Start!");
 
-//   while (1)
-//   {
-//     err_t err;
-//     /* recording end condition */
-//     if (theAudio->getRecordingSize() > recoding_size)
-//     {
-//       theAudio->stopRecorder();
-//       sleep(1);
-//       err = theAudio->readFrames(myFile);
-//       break;
-//     }
+  while (1)
+  {
+    err_t err;
+    /* recording end condition */
+    if (theAudio->getRecordingSize() > recoding_size)
+    {
+      theAudio->stopRecorder();
+      sleep(1);
+      err = theAudio->readFrames(recFile);
+      break;
+    }
 
-//     /* Read frames to record in file */
-//     err = theAudio->readFrames(myFile);
-//     if (err != AUDIOLIB_ECODE_OK || ErrEnd)
-//     {
-//       Serial.print("File End! =");
-//       Serial.println(err);
-//       theAudio->stopRecorder();
-//       break;
-//     }
-//     usleep(10000);
-//   }
+    /* Read frames to record in file */
+    err = theAudio->readFrames(recFile);
+    if (err != AUDIOLIB_ECODE_OK || ErrEnd)
+    {
+      Serial.print("File End! =");
+      Serial.println(err);
+      theAudio->stopRecorder();
+      break;
+    }
+    usleep(10000);
+  }
 
-//   theAudio->closeOutputFile(myFile);
-//   myFile.close();
-//   theAudio->setReadyMode();
-//   Serial.println("End Recording");
-// }
+  theAudio->closeOutputFile(recFile);
+  recFile.close();
+  theAudio->setReadyMode();
+  Serial.println("End Recording");
+}
 
 void start_player(const char* recFileName){
   bool isErr = false;
