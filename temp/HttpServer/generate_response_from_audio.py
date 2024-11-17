@@ -15,6 +15,7 @@ load_dotenv()
 import tempfile
 import shutil
 import pydub
+import pykakasi
 
 # Google Cloud APIキーの設定
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/marica/inusense/config/notion-calendar-manager-bc1ebc32bf22.json"
@@ -214,6 +215,20 @@ def create_speech_mp3(text):
 def play_audio():
     playsound(RESPONSE_AUDIO)
 
+def convert_to_romaji(input):
+    kakasi = pykakasi.kakasi()
+
+    # モードの設定
+    kakasi.setMode("H","a") # Hiragana to ascii, default: no conversion
+    kakasi.setMode("K","a") # Katakana to ascii, default: no conversion
+    kakasi.setMode("J","a") # Japanese to ascii, default: no conversion
+    kakasi.setMode("r","Passport") # default: use Hepburn Roman table
+
+    text = input
+    conv = kakasi.getConverter()
+    result = conv.do(text)
+    return result  # Return the result instead of printing it
+
 # 動作テスト（録音・生成・再生）
 # def test():
 #     while True:
@@ -238,7 +253,8 @@ def m():
     text = transcribe_speech(QUESTION_AUDIO)
     answer = receive_GPT_response(text)
     create_speech_mp3(answer)
-    return transcribe_speech(RESPONSE_AUDIO)
+    input = transcribe_speech(RESPONSE_AUDIO)
+    return str(convert_to_romaji(input))
 
 #main()
 # test()
