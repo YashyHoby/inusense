@@ -28,31 +28,41 @@ void setup()
     Serial.println("Insert SD card.");
   }
 
+  // ハードウェアUART (Serial2) の初期化
+  Serial2.begin(9600); // ボーレートを9600bpsに設定
+  sleep(2);
+
   initialize_http();
   initialize_audio();
   
 
   delay(5000);
   Serial.println("Setup complete");
+  Serial2.print("sextutoaxtupukanryo-.\r");
 }
 
 void loop()
 { 
   Serial.println("start main loop");
-  delay(1000);
+  delay(5000);
 
   // line通知リクエスト
   //Serial.println("send LINE request");
   //post_requestLINE();
+  Serial2.print("reko-dosuta-to.\r");
+  start_recorder(RECORD_FILE_NAME);
 
   // オーディオファイルを送信
-  //post_audioFile(SEND_FILE_NAME);
+  Serial2.print("soushin.\r");
+  post_audioFile(RECORD_FILE_NAME);
   
   String response = get_text();
+  Serial2.print(response);
+  delay(5000);
 
   // 録音と再生
   //test_recAndPlay_mp3();
-
+  Serial2.print("owari.\r");
   Serial.println("end main loop");
   while(1){
       // 停止

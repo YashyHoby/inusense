@@ -13,6 +13,6 @@
 #define  HTTP_POST_PATH "/postData"
 #define  HTTP_LINE_PATH "/getLINE"
 #define  HTTP_REP_PATH "/getReply"
-#define HTTP_TEXT_RES_PATH "/getTextRes"
+#define  HTTP_TEXT_RES_PATH "/getTextRes"
 
 #endif /*_CONFIG_H_*/
