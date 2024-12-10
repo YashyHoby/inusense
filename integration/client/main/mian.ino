@@ -17,6 +17,7 @@ const char label[3][8] = {"itteki", "tadaima", "nene"}; // ラベル用テキス
 
 void setup()
 {
+  initialize_http();
   Serial.begin(CONSOLE_BAUDRATE);
   while (!Serial)
   {
@@ -34,11 +35,12 @@ void setup()
   Serial2.begin(9600); // ボーレートを9600bpsに設定
   delay(1000);
 
+  
   initialize_audio();
   initialization_TWR();
-  //initialize_http();
+  
 
-  delay(2000);
+  delay(5000);
   httpStat = POST;
   Serial.println("Setup complete");
   speakText("sextutoaxtupukanryo-.\r");
@@ -88,6 +90,10 @@ void normal_mode(){
   unsigned long startTime = millis();
   while(true){
     int triggerWord_index = triggerWordRecognition();
+
+    //triggerWord_index = 0; //デバッグ
+    delay(1000); 
+
     // トリガー分岐
     if(triggerWord_index == 0){
       // 行ってきます
@@ -136,6 +142,7 @@ void alert_mode(){
   while(true){
     speakText("okaeri-.\r");
     int triggerWord_index = triggerWordRecognition();
+    //triggerWord_index = 0; //デバッグ
     // トリガー分岐
     if(triggerWord_index == 1){
       // ただいま
@@ -166,22 +173,53 @@ void alert_mode(){
 void interaction_mode(){
   Serial.println("interaction mode start");
   speakText("naani.\r");
-  start_recorder(RECORD_FILE_NAME);
-  delay(5000);
 
-  // 録音データ送信
-  handleHttpPost(RECORD_FILE_NAME);
-
-  // テキスト受信
-  downloadTextFile(RECEIVE_FILE_NAME);
-  char answer = "";
+  delay(7000);
   
-  speakText(answer);
+  speakText("kakinohazushi.\r");
+
+  delay(500);
+
+  // start_recorder(RECORD_FILE_NAME);
+  // delay(1000);
+
+  // Serial.println("send to server");
+  // // 録音データ送信
+  // handleHttpPost(RECORD_FILE_NAME);
+
+  // String ans_st = response_req();
+
+  // Serial.println("reseive from server");
+  // // テキスト受信
+  // //downloadTextFile(RECEIVE_FILE_NAME);
+
+
+  // char* answer = stringToCharArray(ans_st + ".\r");
+  
+  // speakText(answer);
 
   Serial.println("interaction mode end");
 }
 
 
+char* stringToCharArray(const String& str) {
+  // Stringの長さを取得
+  size_t strLength = str.length();
+  
+  // 終端文字（ヌル文字）分の1を加えたサイズでメモリを確保
+  char* buffer = (char*)malloc(strLength + 1);
+  
+  // メモリ確保が成功した場合
+  if (buffer != nullptr) {
+    // Stringをchar配列にコピー
+    str.toCharArray(buffer, strLength + 1);
+  } else {
+    // メモリ確保に失敗した場合のエラーハンドリング
+    Serial.println("Error: Memory allocation failed.");
+  }
+  
+  return buffer;
+}
 // レディー状態検知と末尾追加をしたかった
 void speakText(char* text){
   // unsigned long timeoutStart  = millis(); // 5秒のタイムアウトを設定

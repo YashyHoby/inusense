@@ -14,18 +14,21 @@ void parse_httpresponse(char *message) {
 }
 
 void initialize_http() {
+    Serial.println("initialization http");
     
     Init_GS2200_SPI_type(iS110B_TypeC);
 
     gsparams.mode = ATCMD_MODE_STATION;
-    gsparams.psave = ATCMD_PSAVE_DEFAULT;
+    //gsparams.psave = ATCMD_PSAVE_DEFAULT;
+
+    Serial.println("dsaass");
     if (gs2200.begin(gsparams)) {
-        ConsoleLog("GS2200 Initialization Failed");
+        Serial.println("GS2200 Initialization Failed");
         while (1);
     }
-
+    Serial.println("dsss");
     if (gs2200.activate_station(AP_SSID, PASSPHRASE)) {
-        ConsoleLog("Association Failed");
+        Serial.println("Association Failed");
         while (1);
     }
 
@@ -85,7 +88,6 @@ void handleHttpGet(const char* saveFileName) {
     }
 
     do {
-        Serial.println("unchi");
         result = theCustomHttpGs.receive(5000);
         Serial.println(result);
         if (result) {
@@ -97,7 +99,7 @@ void handleHttpGet(const char* saveFileName) {
     } while (result);
     Serial.println("dd");
     myFile.close();//
-    theCustomHttpGs.end();
+    //theCustomHttpGs.end();
 }
 
 // bool HttpGs2200::receive(uint64_t timeout) を利用
@@ -155,19 +157,71 @@ void downloadAudioFile_timeout(const char* saveFileName) {
 
 
     Serial.println("adaf");
-    theCustomHttpGs.end();
+    //theCustomHttpGs.end();
     Serial.println("dddddd");
     myFile.close();
 }
 
 // bool HttpGs2200::receive(uint64_t timeout) を利用
 void LINE_req() {
-    const int RECEIVE_PACKET_SIZE = 10;
-    uint8_t buffer[RECEIVE_PACKET_SIZE];
+    const int RECEIVE_PACKET_SIZE = 1500;
+    uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
     int result = 0;
+
+    theCustomHttpGs.begin(&hostParams);
 
     theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
     result = theCustomHttpGs.get(HTTP_LINE_PATH);
+
+    if (!result) {
+        Serial.println("GETリクエストの送信に失敗しました");
+        return;
+    }
+
+    Serial.println("GETリクエストを送信しました");
+
+    String response = "";
+    do {
+        result = theCustomHttpGs.receive(5000);
+        if (1) {
+            theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+            response += (char *)Receive_Data;
+        } else {
+            Serial.println("データの受信が完了しました");
+        }
+    } while (result);
+
+    //Serial.println(response);
+
+    // // ヘッダーとボディの分離
+    // //String response = (char *)Receive_Data;
+    // int headerEndIndex = response.indexOf("\r\n\r\n");
+    // if (headerEndIndex != -1) {
+    //     String headers = response.substring(0, headerEndIndex);
+    //     String body = response.substring(headerEndIndex + 4);
+
+    //     Serial.println("サーバーからのレスポンスヘッダー:");
+    //     Serial.println(headers);
+
+    //     Serial.println("サーバーからのレスポンスボディ:");
+    //     Serial.println(body);
+    // } else {
+    //     Serial.println("レスポンスの解析に失敗しました");
+    // }
+
+    String body = separate_string(response);
+    Serial.println(body);
+}
+
+String response_req() {
+    const int RECEIVE_PACKET_SIZE = 1500;
+    uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
+    int result = 0;
+
+
+    theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
+    
+    result = theCustomHttpGs.get(HTTP_REP_PATH);
 
     if (!result) {
         Serial.println("Failed to send GET request");
@@ -177,14 +231,49 @@ void LINE_req() {
     }
 
 
-    Serial.println("HTTP GET request sent");
+    Serial.println("GETリクエストを送信しました");
 
-    Serial.println("adaf");
-    theCustomHttpGs.end();
-    Serial.println("dddddd");
+    String response = "";
+    do {
+        result = theCustomHttpGs.receive(5000);
+        if (1) {
+            theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+            response += (char *)Receive_Data;
+        } else {
+            Serial.println("データの受信が完了しました");
+        }
+    } while (result);
+
+    String body = separate_string(response);
+    Serial.println(body);
+
+    return body;
 }
 
+String separate_string(String input){
+    Serial.begin(9600);
 
+    // 改行文字の位置を取得
+    int newlineIndex = input.indexOf('\n');
+
+    // 改行文字が存在する場合
+    
+    // 1行目を抽出
+    String line1 = input.substring(0, newlineIndex);
+    // 2行目を抽出
+    String line2 = input.substring(newlineIndex + 1);
+
+    // // 結果を表示
+    // Serial.println("1行目: " + line1);
+    // Serial.println("2行目: " + line2);
+    
+    // else {
+    // // 改行文字が見つからない場合
+    // Serial.println("改行文字が見つかりませんでした。");
+    // }
+
+    return line2;
+}
 
 // int HttpGs2200::receive(uint8_t* data, int length) を利用
 void downloadAudioFile_byteRead(const char* saveFileName) {
@@ -236,15 +325,15 @@ void downloadAudioFile_byteRead(const char* saveFileName) {
     }
 
     // 終了処理
-    theCustomHttpGs.end();
+    //theCustomHttpGs.end();
     myFile.close();
 }
 
 
 //　テキストデータ受信
 void downloadTextFile(const char* saveFileName) {
-    const int RECEIVE_PACKET_SIZE = 10;
-    uint8_t buffer[RECEIVE_PACKET_SIZE];
+    const int RECEIVE_PACKET_SIZE = 1500;
+    uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
     int result = 0;
 
     if (theSD.exists(saveFileName))
@@ -262,7 +351,7 @@ void downloadTextFile(const char* saveFileName) {
     }
 
     theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
-    result = theCustomHttpGs.get(HTTP_GET_PATH);
+    result = theCustomHttpGs.get(HTTP_REP_PATH);
 
     if (!result) {
         Serial.println("Failed to send GET request");
@@ -273,28 +362,43 @@ void downloadTextFile(const char* saveFileName) {
 
 
     Serial.println("HTTP GET request sent");
+    Serial.println(result);
 
-
-    while (true){
-        result = theCustomHttpGs.receive(20000);
+    // while (true){
+    //     result = theCustomHttpGs.receive(20000);
         
-        if (result) {
-            theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
-            myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
-            // バイナリで出力
-            for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
-                Serial.print((char)buffer[i], HEX);
-                Serial.print(" ");
-            }
-            Serial.println("loading..");
+    //     if (result) {
+    //         theCustomHttpGs.read_data(buffer, RECEIVE_PACKET_SIZE);  // 受信したデータをバッファに格納
+    //         myFile.write(buffer, RECEIVE_PACKET_SIZE);  // バッファ内容をSDカードに書き込み
+    //         // バイナリで出力
+    //         for (int i = 0; i < RECEIVE_PACKET_SIZE; i++) {
+    //             Serial.print((char)buffer[i], HEX);
+    //             Serial.print(" ");
+    //         }
+    //         Serial.println("loading..");
+    //     } else {
+    //         Serial.println("End");
+    //         break;
+    //     }
+        
+    // }
+
+    String response = "";
+    do {
+        result = theCustomHttpGs.receive(5000);
+        if (1) {
+            theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+            response += (char *)Receive_Data;
         } else {
-            Serial.println("End");
-            break;
+            Serial.println("データの受信が完了しました");
         }
-        
-    }
+    } while (result);
+
+    Serial.println("doukana");
+    String body = separate_string(response);
+    Serial.println(body);
 
 
-    theCustomHttpGs.end();
+    //theCustomHttpGs.end();
     myFile.close();
 }

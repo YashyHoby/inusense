@@ -28,5 +28,7 @@ void downloadAudioFile_byteRead(const char* saveFilePath);
 void downloadTextFile(const char* saveFileName);
 void close_recorder();
 void LINE_req();
+String response_req();
+String separate_string(String input);
 
 #endif /* HTTPCLIENT_H */

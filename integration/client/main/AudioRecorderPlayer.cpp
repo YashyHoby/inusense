@@ -30,6 +30,20 @@ void initialize_audio()
 
 void start_recorder(const char* recFileName)
 {
+  /* Recording time[second] */
+  static const int32_t recoding_time = 5;
+
+  /* Recording bit rate
+  * Set in bps.
+  * Note: 96kbps fixed
+  */
+  static const int32_t recoding_bitrate = 96000;
+
+  /* Bytes per second */
+  static const int32_t recoding_byte_per_second = (recoding_bitrate / 8);
+
+  /* Total recording size */
+  static const int32_t recoding_size = recoding_byte_per_second * recoding_time;
   /* Select input device as analog microphone */
   theAudio->setRecorderMode(AS_SETRECDR_STS_INPUTDEVICE_MIC);
   
