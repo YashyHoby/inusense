@@ -28,6 +28,8 @@ void downloadAudioFile_byteRead(const char* saveFilePath);
 void downloadTextFile(const char* saveFileName);
 void close_recorder();
 void post_requestLINE();
+
+String get_text();
 String response_req();
 String separate_string(String input);
 

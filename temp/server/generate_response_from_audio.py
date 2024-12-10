@@ -41,7 +41,7 @@ FORMAT = """
 
 # 利用ファイル
 RESPONSE_AUDIO = "response.mp3" # テキスト読み上げ音声ファイル
-QUESTION_AUDIO = "questions.mp3" # 録音音声保存用ファイル
+QUESTION_AUDIO = "question2.mp3" # 録音音声保存用ファイル
 CHAT_HISTORY_FILE = "chat_history.json"  # 履歴を保存するファイル
 
 def record_audio():

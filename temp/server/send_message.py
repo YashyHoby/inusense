@@ -6,19 +6,8 @@ load_dotenv("../../.hisaenv")
 line_api_token = os.getenv('LINE_API_TOKEN')
 line_user_id = os.getenv('LINE_USER_ID')
 
-LINE_API_TOKEN_PATH = "../../config/line/line_access_token.txt"
-USER_ID = 'U10f6038da3853cc2d4c6308f21806703'
-
-# line apiのアクセストークン取得
-def read_keyFile():
-    try:
-        with open(LINE_API_TOKEN_PATH, 'r', encoding='utf-8') as file:
-            key = file.readline().strip()
-        return key
-    except FileNotFoundError:
-        return "ファイルが見つかりません。"
-    except Exception as e:
-        return f"エラーが発生しました: {e}"
+line_api_token = os.getenv('LINE_API_TOKEN')
+line_user_id = os.getenv('LINE_USER_ID')
 
 # アクセストークンが有効か確認
 def check_access_token(access_token):
@@ -87,11 +76,9 @@ def send_message_to_user(access_token, user_id, message):
         print(f"エラー: {response.status_code}, {response.text}")
 
 def main():
-    #access_token = read_keyFile()
-    access_token = "+UAHZ2jYhC/hSia5BBoBsPu7nOXHNrMsln9Wwb/tlkxibMpWcQIB8F/0zVn26yW9QBwh/mNI2nCtRmMiVzmATTq4tdbgyykkz3iOatkyifnAb+DwE3GGyVmlZgoGtixo3U8jB6OmKj42GOz2jkRDpwdB04t89/1O/w1cDnyilFU="
     #check_access_token(access_token)
     #send_message(access_token, "hello")
-    send_message_to_user(access_token, USER_ID, "wa")
+    send_message_to_user(line_api_token, line_user_id, "wa")
 
 
 #main()

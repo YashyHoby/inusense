@@ -58,8 +58,20 @@ def generate_reply():
         return Response("error", status=200, mimetype='text/plain')
 
 # テキストファイル送信（テスト用）
-@app.route('/getText', methods=['GET'])
+@app.route('/getTextRes', methods=['GET'])
 def send_answer_text():
+    print("generate response")
+    try:
+        text_data = generate_response_audio()
+        return Response(text_data+"./r", status=200, mimetype='text/plain')
+    
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return Response("error", status=200, mimetype='text/plain')
+
+# テキストファイル送信（テスト用）
+@app.route('/getText', methods=['GET'])
+def send_text():
     print("send text to spresense")
     try:
         with open(TEXT_FILE_PATH, "r", encoding="utf-8") as file:

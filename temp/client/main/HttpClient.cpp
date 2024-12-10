@@ -106,12 +106,71 @@ void post_requestLINE() {
     // } else {
     //     Serial.println("レスポンスの解析に失敗しました");
     // }
-
     String body = separate_string(response);
-    Serial.println(body);
+    // Serial.println(body);
 }
 // -------------------------------------------------------------------------------------------------------------------------------------------------
 // 以下 テキストデータや音声データの受信をいろんな関数で試している
+
+// ラインの通知をリクエスト
+String get_text() {
+    const int RECEIVE_PACKET_SIZE = 1500;
+    uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
+    int result = 0;
+
+    theCustomHttpGs.begin(&hostParams);
+
+    theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
+
+    result = theCustomHttpGs.get(HTTP_TEXT_RES_PATH);
+
+
+    if (!result) {
+        Serial.println("GETリクエストの送信に失敗しました");
+        return;
+    }
+
+    Serial.println("GETリクエストを送信しました");
+
+    String response = "";
+    do {
+
+        result = theCustomHttpGs.receive(30000);
+        if (1) {
+
+            theCustomHttpGs.read_data(Receive_Data, RECEIVE_PACKET_SIZE);
+            response += (char *)Receive_Data;
+        } else {
+            Serial.println("データの受信が完了しました");
+        }
+    } while (result);
+
+    //Serial.println(response);
+
+    // // ヘッダーとボディの分離
+    // //String response = (char *)Receive_Data;
+    // int headerEndIndex = response.indexOf("\r\n\r\n");
+    // if (headerEndIndex != -1) {
+    //     String headers = response.substring(0, headerEndIndex);
+    //     String body = response.substring(headerEndIndex + 4);
+
+    //     Serial.println("サーバーからのレスポンスヘッダー:");
+    //     Serial.println(headers);
+
+    //     Serial.println("サーバーからのレスポンスボディ:");
+    //     Serial.println(body);
+    // } else {
+    //     Serial.println("レスポンスの解析に失敗しました");
+    // }
+
+    String body = separate_string(response);
+
+    Serial.println("---");
+    Serial.println(body);
+    Serial.println("---");
+
+    return body;
+}
 
 void handleHttpGet(const char* saveFileName) {
     Serial.print("get audio from server");
@@ -258,13 +317,11 @@ String response_req() {
 }
 
 String separate_string(String input){
-    Serial.begin(9600);
 
     // 改行文字の位置を取得
     int newlineIndex = input.indexOf('\n');
 
     // 改行文字が存在する場合
-    
     // 1行目を抽出
     String line1 = input.substring(0, newlineIndex);
     // 2行目を抽出

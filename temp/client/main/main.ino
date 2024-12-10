@@ -42,11 +42,13 @@ void loop()
   delay(1000);
 
   // line通知リクエスト
-  Serial.println("send LINE request");
-  post_requestLINE();
+  //Serial.println("send LINE request");
+  //post_requestLINE();
 
   // オーディオファイルを送信
-  post_audioFile(SEND_FILE_NAME);
+  //post_audioFile(SEND_FILE_NAME);
+  
+  String response = get_text();
 
   // 録音と再生
   //test_recAndPlay_mp3();
