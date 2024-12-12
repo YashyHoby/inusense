@@ -164,16 +164,14 @@ def receive_data():
         # バイナリデータをファイルに書き込む
         print(os.getcwd())
         save_dir_path = ''
-        file_name = 'questions.mp3'
-        if not os.path.exists(save_dir_path+file_name):
-            print("saving...")
-            with open(save_dir_path+file_name, 'wb') as f:
-                for packets in received_packets:
-                    f.write(packets)
-            print("DONE!!")
-        else:
-            print("file already exists.")
+        file_name = MP3_FILE_PATH
+        print("saving...")
+        with open(os.path.join(save_dir_path, file_name), 'wb') as f:
+            for packets in received_packets:
+                f.write(packets)
+        print("DONE!!")
         received_packets.clear()
+
     else:
         data_bin_row = body_to_bin(data_b)#変換
         received_packets.append(data_bin_row)
