@@ -192,7 +192,7 @@ void start_player(const char* recFileName){
       * which is 10 milliseconds (10,000 microseconds) by default. Therefore,
       * it will sleep for a longer time than the time requested here.
       */
-      usleep(40000);
+      //usleep(40000);
     }
     
     theAudio->setReadyMode();

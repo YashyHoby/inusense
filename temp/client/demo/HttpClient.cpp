@@ -52,6 +52,7 @@ void initialize_http() {
 void post_audioFile(const char* filePath) {
     //const char* filePath = "audio/Morning_10s.mp3";
     File myFile = theSD.open(filePath, FILE_READ);
+    //theCustomHttpGs.begin(&hostParams);
     theCustomHttpGs.sendFile(myFile);
     myFile.close();
 }
@@ -62,7 +63,7 @@ void post_requestLINE() {
     uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
     int result = 0;
 
-    theCustomHttpGs.begin(&hostParams);
+    //theCustomHttpGs.begin(&hostParams);
 
     theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
 
@@ -118,7 +119,7 @@ String get_text() {
     uint8_t Receive_Data[RECEIVE_PACKET_SIZE] = {0};
     int result = 0;
 
-    theCustomHttpGs.begin(&hostParams);
+    //theCustomHttpGs.begin(&hostParams);
 
     theCustomHttpGs.config(HTTP_HEADER_TRANSFER_ENCODING, "identity");
 
@@ -169,6 +170,7 @@ String get_text() {
     Serial.println(body);
     Serial.println("---");
 
+    theCustomHttpGs.end();
     return body;
 }
 

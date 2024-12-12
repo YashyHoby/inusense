@@ -63,7 +63,7 @@ def send_answer_text():
     print("generate response")
     try:
         text_data = generate_response_audio()
-        return Response(text_data+"./r", status=200, mimetype='text/plain')
+        return Response(text_data, status=200, mimetype='text/plain')
     
     except Exception as e:
         print(f"Error occurred: {e}")

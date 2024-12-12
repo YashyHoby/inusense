@@ -2,7 +2,7 @@
 #include "GlobalVariables.h"
 #include "AudioRecorderPlayer.h"
 #include "HttpClient.h"
-
+#include "TriggerWordRecognition.h"
 
 #define RECORD_FILE_NAME "question.mp3"
 #define SEND_FILE_NAME "test.mp3" // デバック用
@@ -15,7 +15,7 @@
 
 #define IRPIN A0  // 赤外線入力ピン
 
-
+const char label[3][8] = {"itteki", "tadaima", "nene"}; // ラベル用テキスト
 
 void setup()
 {
@@ -37,6 +37,7 @@ void setup()
 
   initialize_http();
   initialize_audio();
+  initialization_TWR();
   
 
   delay(2000);
@@ -48,14 +49,10 @@ void loop()
 { 
   Serial.println("start main loop");
 
-  // line通知リクエスト
-  //Serial.println("send LINE request");
-  //post_requestLINE();
-  
-  conversation();
-  while(1){
-      // 停止
-  }
+  //trigger_itteki();
+  //trigger_tadaima();
+  //trigger_nene();
+  //trigger_tadaima_fushinsya();
 }
 
 
@@ -66,6 +63,7 @@ void test_recAndPlay_mp3(){
   start_player(RECORD_FILE_NAME);
   delay(50000);
 }
+
 
 
 // 長文テキストを分割して再生
@@ -121,7 +119,7 @@ void speakText(String response){
       if (digitalRead(2) == 1){
         break;
       } else {
-        Serial.println("busy");
+        //Serial.println("busy");
         delay(100);
       } 
     }
@@ -130,14 +128,32 @@ void speakText(String response){
   }
 }
 
+void IR_test(){
+  while(true){
+    Serial.println(analogRead(IRPIN));
+    delay(500);
+  }
+}
+
+// 赤外線
+void wait_person_detection(){
+  Serial.println("start person detection");
+  while(true){
+    if(analogRead(IRPIN) > 300){
+      break;
+    }
+  } // 人物が検知されるまで待機
+  Serial.println("person detected");
+}
+
 void conversation(){
   Serial.println("start conversation");
 
   while(true){
-    // line通知リクエスト
     start_player(ACTION_AUDIO);
     start_recorder(RECORD_FILE_NAME);
 
+    delay(500);
     // オーディオファイルを送信
     Serial.println("send audio to server");
     post_audioFile(RECORD_FILE_NAME);
@@ -152,4 +168,67 @@ void conversation(){
   Serial2.print("baibai.\r");
   Serial.println("end conversation");
 
+}
+
+
+void trigger_itteki(){
+  // 行ってきます識別
+  while(true){
+    int triggerWord_index = triggerWordRecognition();
+
+    if(triggerWord_index == 0){
+      break;
+    }
+  }
+  //delay(2000);
+  Serial2.print("ixtuteraxtusyai.\r");
+}
+
+void trigger_tadaima(){
+  delay(2000);
+  wait_person_detection();
+
+  Serial2.print("okaeri-.\r");
+  // ただいま識別
+  while(true){
+    int triggerWord_index = triggerWordRecognition();
+
+    if(triggerWord_index == 1){
+      break;
+    }
+  }
+
+  Serial2.print("waai\r");
+}
+
+void trigger_nene(){
+  // ねえねえ識別
+  while(true){
+    int triggerWord_index = triggerWordRecognition();
+
+    if(triggerWord_index == 2){
+      break;
+    }
+  }
+
+  Serial2.print("naani.\r");
+
+  // またね，バイバイ等で会話の終わりを識別
+  conversation();
+}
+
+void trigger_tadaima_fushinsya(){
+  delay(2000);
+  wait_person_detection();
+
+  Serial2.print("okaeri-.\r");
+
+  // ただいまではない応答
+  delay(5000);
+
+  Serial2.print("e\r");
+
+  delay(500);
+
+  post_requestLINE();
 }
