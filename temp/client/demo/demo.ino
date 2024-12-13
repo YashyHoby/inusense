@@ -50,8 +50,8 @@ void loop()
   Serial.println("start main loop");
 
   //trigger_itteki();
-  //trigger_tadaima();
-  //trigger_nene();
+  // trigger_tadaima();
+  trigger_nene();
   //trigger_tadaima_fushinsya();
 }
 
@@ -67,10 +67,62 @@ void test_recAndPlay_mp3(){
 
 
 // 長文テキストを分割して再生
-void speakText(String response){
+void speakText(String input){
+
+  /* 万一のときのために「、。」を「,.」に変換する */
+  String input2response; // 変換後の文字列を格納
+  int strLength = input.length();  // inputの長さを取得
+  for (int i = 0; i < strLength; i++) {
+    // UTF-8の1文字目を取得
+    char c = input.charAt(i);
+    if (c == 0xE3 && i + 2 < strLength) { 
+      // UTF-8マルチバイト文字（0xE3: 全角の「、」「。」の1バイト目）
+      char c1 = input.charAt(i + 1); // 2バイト目
+      char c2 = input.charAt(i + 2); // 3バイト目
+      if (c1 == 0x80 && c2 == 0x81) { // 全角「、」（U+3001）
+        input2response += ','; // 半角「,」に変換
+        i += 2; // 次の文字へ（3バイト分スキップ）
+        continue;
+      } else if (c1 == 0x80 && c2 == 0x82) { // 全角「。」（U+3002）
+        input2response += '.'; // 半角「.」に変換
+        i += 2; // 次の文字へ（3バイト分スキップ）
+        continue;
+      }
+    }
+    // マルチバイト文字でない場合、そのまま追加
+    input2response += c;
+  }
+
+  /* まんいちのときのために「'」を取り除く */
+  input2response.replace("'",""); // アポストロフィを削除
+
+  /* haをwaに変換する */
+  String response2response = ""; // 結果文字列を格納
+  strLength = input2response.length();
+  for (int i = 0; i < strLength; i++) {
+    if (i + 1 < strLength && input2response.substring(i, i + 2) == "ha") {
+      // 次の文字が空白、','、または'.'の場合
+      if (i + 2 == strLength || input2response.charAt(i + 2) == ' ' || input2response.charAt(i + 2) == ',' || input2response.charAt(i + 2) == '.') {
+        response2response += "wa"; // "ha"を"wa"に変換
+        i++; // "ha"を処理したので次の文字にスキップ
+        continue;
+      }
+    }
+    // 条件に該当しない場合はそのまま追加
+    response2response += input2response.charAt(i);
+  }
+
+  String response = ""; // 結果の文字列を格納
+  strLength = response2response.length();
+  for (int i = 0; i < strLength; i++) {
+    if (response2response.charAt(i) != ' ') { // 空白でない文字だけを追加
+      response += response2response.charAt(i);
+    }
+  }
+
   /* 文字列の長さを確認，「,」「.」まで，もしくは127バイトまで取り出しながら送信 */
   int maxLength = 125;
-  int strLength = response.length();  // responseの長さを取得
+  strLength = response.length();
   while(strLength > 0) {
     String subResponse;
 
@@ -150,10 +202,10 @@ void conversation(){
   Serial.println("start conversation");
 
   while(true){
-    start_player(ACTION_AUDIO);
+    // start_player(ACTION_AUDIO);
     start_recorder(RECORD_FILE_NAME);
 
-    delay(500);
+    delay(100);
     // オーディオファイルを送信
     Serial.println("send audio to server");
     post_audioFile(RECORD_FILE_NAME);
@@ -210,8 +262,9 @@ void trigger_nene(){
       break;
     }
   }
+  delay(2000);
 
-  Serial2.print("naani.\r");
+  Serial2.print("naani?\r");
 
   // またね，バイバイ等で会話の終わりを識別
   conversation();
